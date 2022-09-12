@@ -1,6 +1,6 @@
-use std::os::raw::{c_ulong, c_char, c_int, c_uint, c_long};
 use core::str::Utf8Error;
 pub use std::ffi::CStr;
+use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong};
 /**lkl_host_operations - host operations used by the Linux kernel
  *
  * These operations must be provided by a host library or by the application
@@ -103,7 +103,7 @@ struct lkl_host_operations {
         void (*tls_free)(struct lkl_tls_key *key);
         int (*tls_set)(struct lkl_tls_key *key, void *data);
         void *(*tls_get)(struct lkl_tls_key *key);
-	       void* (*mem_alloc)(unsigned long);
+           void* (*mem_alloc)(unsigned long);
         void (*mem_free)(void *);
         void* (*page_alloc)(unsigned long size);
         void (*page_free)(void *addr, unsigned long size);
@@ -131,9 +131,7 @@ struct lkl_host_operations {
 #[derive(Debug, Copy, Clone)]
 pub struct lkl_host_operations {
     pub virtio_devices: c_ulong,
-    pub print: ::std::option::Option<
-        unsafe extern "C" fn(str_: *const c_char, len: c_int),
-    >,
+    pub print: ::std::option::Option<unsafe extern "C" fn(str_: *const c_char, len: c_int)>,
     pub panic: ::std::option::Option<unsafe extern "C" fn()>,
     pub func_ptrs: [c_ulong; 32usize],
 }
@@ -147,7 +145,7 @@ pub struct lkl_host_operations {
  *struct lkl_disk {
         void *dev;
         union {
-                int fd; 
+                int fd;
                 void *handle;
         };
         struct lkl_dev_blk_ops *ops;
@@ -175,7 +173,7 @@ fn bindgen_test_layout_lkl_disk() {
     fn test_field_dev() {
         assert_eq!(
             unsafe {
-		             let uninit = ::std::mem::MaybeUninit::<lkl_disk>::uninit();
+                let uninit = ::std::mem::MaybeUninit::<lkl_disk>::uninit();
                 let ptr = uninit.as_ptr();
                 ::std::ptr::addr_of!((*ptr).dev) as usize - ptr as usize
             },
@@ -207,7 +205,7 @@ fn bindgen_test_layout_lkl_disk() {
     }
     test_field_fd();
     fn test_field_ops() {
-               assert_eq!(
+        assert_eq!(
             unsafe {
                 let uninit = ::std::mem::MaybeUninit::<lkl_disk>::uninit();
                 let ptr = uninit.as_ptr();
@@ -225,19 +223,18 @@ fn bindgen_test_layout_lkl_disk() {
     test_field_ops();
 }
 
-
 #[test]
 fn bindgen_test_layout_lkl_host_operations() {
     assert_eq!(
         ::std::mem::size_of::<lkl_host_operations>(),
         280usize,
-      concat!("Size of: ", stringify!(lkl_host_operations))
-    );  
+        concat!("Size of: ", stringify!(lkl_host_operations))
+    );
     assert_eq!(
         ::std::mem::align_of::<lkl_host_operations>(),
         8usize,
         concat!("Alignment of ", stringify!(lkl_host_operations))
-    );  
+    );
     fn test_field_virtio_devices() {
         assert_eq!(
             unsafe {
@@ -253,7 +250,7 @@ fn bindgen_test_layout_lkl_host_operations() {
                 stringify!(virtio_devices)
             )
         );
-    }   
+    }
     test_field_virtio_devices();
     fn test_field_print() {
         assert_eq!(
@@ -270,7 +267,7 @@ fn bindgen_test_layout_lkl_host_operations() {
                 stringify!(print)
             )
         );
-    }   
+    }
     test_field_print();
     fn test_field_panic() {
         assert_eq!(
@@ -287,7 +284,7 @@ fn bindgen_test_layout_lkl_host_operations() {
                 stringify!(panic)
             )
         );
-	   }   
+    }
     test_field_panic();
     fn test_field_funcPtrs() {
         assert_eq!(
@@ -304,92 +301,86 @@ fn bindgen_test_layout_lkl_host_operations() {
                 stringify!(funcPtrs)
             )
         );
-    }   
+    }
     test_field_funcPtrs();
 }
 extern "C" {
-        pub static lkl_host_ops: lkl_host_operations;
-    
-        /**
-        * lkl_start_kernel - registers the host operations and starts the kernel
-        *
-        * The function returns only after the kernel is shutdown with lkl_sys_halt.
-        *
-        * @lkl_ops - pointer to host operations
-        * @cmd_line - format for command line string that is going to be used to
-        * generate the Linux kernel command line
-        int lkl_start_kernel(struct lkl_host_operations *lkl_ops,
-                    const char *cmd_line, ...);
-        */
-        pub fn lkl_start_kernel(
-                lkl_ops: &lkl_host_operations,
-                cmd: *const i8
-        ) -> c_int;
+    pub static lkl_host_ops: lkl_host_operations;
 
-        /**
-        lkl_is_running - returns 1 if the kernel is currently running
-        int lkl_is_running(void);**/
+    /**
+    * lkl_start_kernel - registers the host operations and starts the kernel
+    *
+    * The function returns only after the kernel is shutdown with lkl_sys_halt.
+    *
+    * @lkl_ops - pointer to host operations
+    * @cmd_line - format for command line string that is going to be used to
+    * generate the Linux kernel command line
+    int lkl_start_kernel(struct lkl_host_operations *lkl_ops,
+                const char *cmd_line, ...);
+    */
+    pub fn lkl_start_kernel(lkl_ops: &lkl_host_operations, cmd: *const i8) -> c_int;
 
-        pub fn lkl_is_running() -> c_int;
+    /**
+    lkl_is_running - returns 1 if the kernel is currently running
+    int lkl_is_running(void);**/
+    pub fn lkl_is_running() -> c_int;
 
-        // long lkl_sys_halt(void);             
-        pub fn lkl_sys_halt() -> c_long;
+    // long lkl_sys_halt(void);
+    pub fn lkl_sys_halt() -> c_long;
 
-        /**
-        * lkl_disk_add - add a new disk
-        *
-        * @disk - the host disk handle
-        * @returns a disk id (0 is valid) or a strictly negative value in case of error
-        *int lkl_disk_add(struct lkl_disk *disk);*/
-	       pub fn lkl_disk_add(disk: *mut lkl_disk) -> c_int;
+    /**
+     * lkl_disk_add - add a new disk
+     *
+     * @disk - the host disk handle
+     * @returns a disk id (0 is valid) or a strictly negative value in case of error
+     *int lkl_disk_add(struct lkl_disk *disk);*/
+    pub fn lkl_disk_add(disk: *mut lkl_disk) -> c_int;
 
-        /**
-        * lkl_disk_remove - remove a disk
-        *
-        * This function makes a cleanup of the @disk's virtio_dev structure
-        * that was initialized by lkl_disk_add before.
-        *
-        * @disk - the host disk handle
-        *int lkl_disk_remove(struct lkl_disk disk);
-        */
-        pub fn lkl_disk_remove(disk: lkl_disk) -> c_int;
+    /**
+     * lkl_disk_remove - remove a disk
+     *
+     * This function makes a cleanup of the @disk's virtio_dev structure
+     * that was initialized by lkl_disk_add before.
+     *
+     * @disk - the host disk handle
+     *int lkl_disk_remove(struct lkl_disk disk);
+     */
+    pub fn lkl_disk_remove(disk: lkl_disk) -> c_int;
 
-        /**
-         * lkl_mount_dev - mount a disk
-         *
-         * This functions creates a device file for the given disk, creates a mount
-         * point and mounts the device over the mount point.
-         *
-         * @disk_id - the disk id identifying the disk to be mounted
-         * @part - disk partition or zero for full disk
-         * @fs_type - filesystem type
-         * @flags - mount flags
-         * @opts - additional filesystem specific mount options
-         * @mnt_str - a string that will be filled by this function with the path where
-         * the filesystem has been mounted
-         * @mnt_str_len - size of mnt_str
-         * @returns - 0 on success, a negative value on error
-         */
-        pub fn lkl_mount_dev(
-                disk_id: c_uint,
-                part: c_uint,
-                fs_type: *const c_char,
-                flags: c_int,
-                opts: *const c_char,
-                mnt_str: *mut c_char,
-                mnt_str_len: c_uint,
-        ) -> c_long;
-	
-	/**
- 	* lkl_strerror - returns a string describing the given error code
- 	*
- 	* @err - error code
- 	* @returns - string for the given error code
- 	*const char *lkl_strerror(int err);
-	**/
-	pub fn lkl_strerror(
-		err: c_int,
-	) -> *const c_char;
+    /**
+     * lkl_mount_dev - mount a disk
+     *
+     * This functions creates a device file for the given disk, creates a mount
+     * point and mounts the device over the mount point.
+     *
+     * @disk_id - the disk id identifying the disk to be mounted
+     * @part - disk partition or zero for full disk
+     * @fs_type - filesystem type
+     * @flags - mount flags
+     * @opts - additional filesystem specific mount options
+     * @mnt_str - a string that will be filled by this function with the path where
+     * the filesystem has been mounted
+     * @mnt_str_len - size of mnt_str
+     * @returns - 0 on success, a negative value on error
+     */
+    pub fn lkl_mount_dev(
+        disk_id: c_uint,
+        part: c_uint,
+        fs_type: *const c_char,
+        flags: c_int,
+        opts: *const c_char,
+        mnt_str: *mut c_char,
+        mnt_str_len: c_uint,
+    ) -> c_long;
+
+    /**
+    	* lkl_strerror - returns a string describing the given error code
+    	*
+    	* @err - error code
+    	* @returns - string for the given error code
+    	*const char *lkl_strerror(int err);
+    	**/
+    pub fn lkl_strerror(err: c_int) -> *const c_char;
 }
 
 pub fn strerror<'a>(err: &i32) -> Result<&'a str, Utf8Error> {
@@ -397,5 +388,3 @@ pub fn strerror<'a>(err: &i32) -> Result<&'a str, Utf8Error> {
     let c_str = unsafe { CStr::from_ptr(char_ptr) };
     c_str.to_str()
 }
-
-

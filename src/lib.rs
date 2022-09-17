@@ -2,7 +2,9 @@ use core::str::Utf8Error;
 pub use std::ffi::{CStr, CString};
 pub use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong};
 pub mod lklh;
-
+//pub mod lklfuncs;
+pub use lklh::*;
+//pub use lklfuncs::*;
 /**lkl_host_operations - host operations used by the Linux kernel
  *
  * These operations must be provided by a host library or by the application
@@ -318,7 +320,7 @@ fn bindgen_test_layout_lkl_host_operations() {
 }
 extern "C" {
     pub static lkl_host_ops: lkl_host_operations;
-
+    //pub fn lkl_sys_open(file: *const c_char, flags: c_int, mode: c_int) -> c_long;
     /**
     * lkl_start_kernel - registers the host operations and starts the kernel
     *
@@ -415,6 +417,16 @@ extern "C" {
 
 }
 
+pub fn from_cstr<'a>(some_str: *mut c_char) -> String {
+	let cstr;
+	unsafe {
+		cstr = CStr::from_ptr(some_str);
+       }
+	match cstr.to_str() {
+		Ok(k) => k.to_string(),
+		Err(_) => String::from("invalid str"),
+       }
+}
 
 pub fn to_cstr<'a>(rust_str: &'a str) -> &CStr {
     CStr::from_bytes_with_nul(rust_str.as_bytes()).unwrap()

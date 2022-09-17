@@ -3,6 +3,7 @@ use std::env::args;
 use std::fs::File;
 use std::os::unix::io::AsRawFd;
 use std::process::exit;
+use std::ptr;
 
 fn main() {
     let filename = match args().nth(1) {
@@ -49,7 +50,7 @@ fn main() {
     let fs_type = to_cstr("ext4\0");
     let mount_options = to_cstr("errors=remount-ro\0");
     let msize = 100;
-    let mpoint: *mut c_char = to_mut_cstr("/mnt");
+    let mut mpoint: *mut c_char = to_mut_cstr("");
     let ret;
     unsafe {
         ret = lkl_mount_dev(
@@ -62,31 +63,24 @@ fn main() {
             msize,
         ) as i32;
     }
-    //const FILENAME: &str = "/tmp/test";
-    /*let r;
-    unsafe {
-	let mut params = [0 as c_long; 5];
-	params[0] = to_cstr("/").as_ptr().cast();
-        r = lkl_syscall(__lkl__NR_chdir, params.as_ptr().cast());
-    }
-    println!("chdir {:}", r);*/
-    /*r = lkl_sys_mkdir("/tmp", 0644);
-    println!("mkdir {:}", r);
-    let fd = lkl_sys_open(FILENAME, LKL_O_WRONLY | LKL_O_APPEND | LKL_O_CREAT, 0644);
-    if fd < 0 {
-    print_error(&fd);
-    }*/
-
     if ret < 0 {
-        eprintln!("Error lkl_mount_dev:");
-        print_error(&ret);
-        unsafe {
-            lkl_sys_halt();
-        }
-        exit(1);
+	 eprintln!("Error lkl_mount_dev:"); 
+	print_error(&ret);
+	unsafe { lkl_sys_halt(); }
+	exit(1);
     }
+    let mount_point = from_cstr(mpoint);
+    println!("mounted at {:?}", mount_point);
+    let mut params = [ptr::null::<c_ulong>(); 5];
+    let dir = mount_point.as_ptr().cast::<c_ulong>();
+    params[0] = dir;
+    let r;
     unsafe {
-        println!("mounted at {:}", *mpoint);
+        r = lkl_syscall(__lkl__NR_chdir as i64, ptr::addr_of_mut!(params).cast::<c_long>());
+    }
+    println!("chdir {:}", r);
+    print_error(&(r as i32));
+    unsafe {
         let r = lkl_umount_dev(disk_id, partition, 0, 1000) as i32;
         if r < 0 {
             print_error(&r);

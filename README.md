@@ -11,6 +11,8 @@ cd linux
 make ARCH=lkl -C tools/lkl
 cd ..
 cp linux/tools/lkl/lib/liblkl.so .
+cp linux/tools/lkl/liblkl.a .
+ar rcs liblkl.a liblkl.o
 cargo build && cargo run
 ```
 later for fuzzing

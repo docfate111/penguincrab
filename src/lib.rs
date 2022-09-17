@@ -1,9 +1,8 @@
 use core::str::Utf8Error;
-pub use std::ffi::CStr;
-use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong};
+pub use std::ffi::{CStr, CString};
+pub use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong};
 pub mod lklh;
 
-	
 /**lkl_host_operations - host operations used by the Linux kernel
  *
  * These operations must be provided by a host library or by the application
@@ -155,21 +154,22 @@ pub struct lkl_host_operations {
 };**/
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)] 
-pub struct lkl_dir {
-   pub fd: c_int,
-   pub buf: [c_char; 1024usize],
-   pub pos: *mut c_char,
-   pub len: c_int,
-}
-
-#[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct lkl_disk {
     pub dev: c_ulong,
     pub fd: c_int,
     pub ops: c_ulong,
 }
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct lkl_dir {
+    pub fd: c_int,
+    pub buf: [c_char; 1024usize],
+    pub pos: *mut c_char,
+    pub len: c_int,
+}
+
 #[test]
 fn bindgen_test_layout_lkl_disk() {
     assert_eq!(
@@ -386,22 +386,22 @@ extern "C" {
     ) -> c_long;
 
     /**
-    * lkl_umount_dev - umount a disk
-    *
-    * This functions umounts the given disks and removes the device file and the
-    * mount point.
-    * @disk_id - the disk id identifying the disk to be mounted
-    * @part - disk partition or zero for full disk
-    * @flags - umount flags
-    * @timeout_ms - timeout to wait for the kernel to flush closed files so that
-    * umount can succeed
-    * @returns - 0 on success, a negative value on error
-    */
+     * lkl_umount_dev - umount a disk
+     *
+     * This functions umounts the given disks and removes the device file and the
+     * mount point.
+     * @disk_id - the disk id identifying the disk to be mounted
+     * @part - disk partition or zero for full disk
+     * @flags - umount flags
+     * @timeout_ms - timeout to wait for the kernel to flush closed files so that
+     * umount can succeed
+     * @returns - 0 on success, a negative value on error
+     */
     pub fn lkl_umount_dev(
-         disk_id: c_uint,
-	 part: c_uint,
-	 flags: c_int,
-         timeout_ms: c_long
+        disk_id: c_uint,
+        part: c_uint,
+        flags: c_int,
+        timeout_ms: c_long,
     ) -> c_long;
     /**
     	* lkl_strerror - returns a string describing the given error code
@@ -411,12 +411,13 @@ extern "C" {
     	*const char *lkl_strerror(int err);
     	**/
     pub fn lkl_strerror(err: c_int) -> *const c_char;
-    pub fn lkl_syscall(
-	no: c_long,
-	params: *mut c_long,
-    ) -> c_long;
+    pub fn lkl_syscall(no: c_long, params: *mut c_long) -> c_long;
 
-    
+}
+
+pub fn ustrerror<'a>(err: &u32) -> Result<&'a str, Utf8Error> {
+    let signed_err = *err as i32;
+    strerror(&signed_err)
 }
 
 pub fn strerror<'a>(err: &i32) -> Result<&'a str, Utf8Error> {

@@ -45,7 +45,7 @@ fn main() {
         }
         exit(1);
     }
-
+   
     unsafe {
         lkl_sys_halt();
         lkl_disk_remove(disk);

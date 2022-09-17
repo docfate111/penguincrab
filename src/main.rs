@@ -50,7 +50,7 @@ fn main() {
     let fs_type = to_cstr("ext4\0");
     let mount_options = to_cstr("errors=remount-ro\0");
     let msize: u32 = 100;
-    let mut mpoint = vec![0 as c_char; msize as usize];
+    let mut mpoint = vec![0u8; msize as usize];
     let ret;
     unsafe {
         ret = lkl_mount_dev(
@@ -59,7 +59,7 @@ fn main() {
             fs_type,
             0,
             mount_options,
-            mpoint.as_mut_ptr(),
+            mpoint.as_mut_ptr().cast(),
             msize,
         ) as i32;
     }
@@ -69,8 +69,8 @@ fn main() {
 	unsafe { lkl_sys_halt(); }
 	exit(1);
     }
-    /*let mount_point = [..]);
-    println!("mounted at {:?}", mount_point);
+    let mount_point = String::from_utf8(mpoint).unwrap();
+    println!("mounted at {:}", mount_point);
     let mut params = [ptr::null::<c_ulong>(); 5];
     let dir = mount_point.as_ptr().cast::<c_ulong>();
     params[0] = dir;
@@ -79,7 +79,7 @@ fn main() {
         r = lkl_syscall(__lkl__NR_chdir as i64, ptr::addr_of_mut!(params).cast::<c_long>());
     }
     println!("chdir {:}", r);
-    print_error(&(r as i32));*/
+    print_error(&(r as i32));
     unsafe {
         let r = lkl_umount_dev(disk_id, partition, 0, 1000) as i32;
         if r < 0 {

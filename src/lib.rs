@@ -2,7 +2,7 @@ use core::str::Utf8Error;
 pub use std::ffi::{CStr, CString};
 pub use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong};
 pub mod lklh;
-//pub mod lklfuncs;
+//pub mod lklfuncs; linker error allows but you can't use in main?
 pub use lklh::*;
 //pub use lklfuncs::*;
 /**lkl_host_operations - host operations used by the Linux kernel
@@ -417,15 +417,12 @@ extern "C" {
 
 }
 
-pub fn from_cstr<'a>(some_str: *mut c_char) -> String {
-	let cstr;
-	unsafe {
-		cstr = CStr::from_ptr(some_str);
-       }
-	match cstr.to_str() {
-		Ok(k) => k.to_string(),
-		Err(_) => String::from("invalid str"),
-       }
+pub fn from_cstr(some_str: *mut c_char) -> String {
+    let cstr;
+    unsafe {
+        cstr = CStr::from_ptr(some_str);
+    }
+    String::from_utf8_lossy(cstr.to_bytes()).into_owned()
 }
 
 pub fn to_cstr<'a>(rust_str: &'a str) -> *const c_char {

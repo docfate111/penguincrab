@@ -1,6 +1,8 @@
 use core::str::Utf8Error;
 pub use std::ffi::CStr;
 use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong};
+mod syscall_nums;
+	
 /**lkl_host_operations - host operations used by the Linux kernel
  *
  * These operations must be provided by a host library or by the application
@@ -381,6 +383,10 @@ extern "C" {
     	*const char *lkl_strerror(int err);
     	**/
     pub fn lkl_strerror(err: c_int) -> *const c_char;
+    pub fn lkl_syscall(
+	no: c_long,
+	params: *mut c_long,
+    ) -> c_long;
 }
 
 pub fn strerror<'a>(err: &i32) -> Result<&'a str, Utf8Error> {

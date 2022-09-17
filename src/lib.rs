@@ -415,13 +415,31 @@ extern "C" {
 
 }
 
-pub fn ustrerror<'a>(err: &u32) -> Result<&'a str, Utf8Error> {
-    let signed_err = *err as i32;
-    strerror(&signed_err)
+
+pub fn to_cstr<'a>(rust_str: &'a str) -> &CStr {
+    CStr::from_bytes_with_nul(rust_str.as_bytes()).unwrap()
+}
+
+pub fn to_mut_cstr<'a>(rust_str: &'a str) -> *mut c_char {
+    let cv: Vec<u8> = CString::new(rust_str).unwrap().into_bytes_with_nul();
+    let mut tmp: Vec<c_char> = cv.into_iter().map(|c| c as c_char).collect::<_>();
+    let mpoint: *mut c_char = tmp.as_mut_ptr();
+    mpoint
 }
 
 pub fn strerror<'a>(err: &i32) -> Result<&'a str, Utf8Error> {
     let char_ptr = unsafe { lkl_strerror(*err) };
     let c_str = unsafe { CStr::from_ptr(char_ptr) };
     c_str.to_str()
+}
+
+pub fn print_error<'a>(err: &i32) {
+    match strerror(err) {
+        Ok(k) => {
+            eprintln!("{:}", k);
+        }
+        Err(_) => {
+            eprintln!("unparseable string");
+        }
+    }
 }

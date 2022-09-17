@@ -428,15 +428,8 @@ pub fn from_cstr<'a>(some_str: *mut c_char) -> String {
        }
 }
 
-pub fn to_cstr<'a>(rust_str: &'a str) -> &CStr {
-    CStr::from_bytes_with_nul(rust_str.as_bytes()).unwrap()
-}
-
-pub fn to_mut_cstr<'a>(rust_str: &'a str) -> *mut c_char {
-    let cv: Vec<u8> = CString::new(rust_str).unwrap().into_bytes_with_nul();
-    let mut tmp: Vec<c_char> = cv.into_iter().map(|c| c as c_char).collect::<_>();
-    let mpoint: *mut c_char = tmp.as_mut_ptr();
-    mpoint
+pub fn to_cstr<'a>(rust_str: &'a str) -> *const c_char {
+    CStr::from_bytes_with_nul(rust_str.as_bytes()).unwrap().as_ptr().cast()
 }
 
 pub fn strerror<'a>(err: &i32) -> Result<&'a str, Utf8Error> {

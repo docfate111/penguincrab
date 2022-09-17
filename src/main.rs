@@ -25,11 +25,11 @@ fn main() {
         fd: file.as_raw_fd(),
         ops: 0,
     };
-    let boot_arg = CStr::from_bytes_with_nul(b"mem=128M loglevel=8\0").unwrap();
+    let boot_arg = to_cstr("mem=128M loglevel=8\0");
     let disk_id;
     unsafe {
         disk_id = lkl_disk_add(&mut disk) as u32;
-        lkl_start_kernel(&lkl_host_ops, boot_arg.as_ptr().cast());
+        lkl_start_kernel(&lkl_host_ops, boot_arg);
     }
     if (disk_id as i32) < 0 {
         eprintln!("Error adding disk:");
@@ -49,17 +49,17 @@ fn main() {
     let partition = 0;
     let fs_type = to_cstr("ext4\0");
     let mount_options = to_cstr("errors=remount-ro\0");
-    let msize = 100;
-    let mut mpoint: *mut c_char = to_mut_cstr("");
+    let msize: u32 = 100;
+    let mut mpoint = vec![0 as c_char; msize as usize];
     let ret;
     unsafe {
         ret = lkl_mount_dev(
             disk_id,
             partition,
-            fs_type.as_ptr().cast(),
+            fs_type,
             0,
-            mount_options.as_ptr().cast(),
-            mpoint,
+            mount_options,
+            mpoint.as_mut_ptr(),
             msize,
         ) as i32;
     }
@@ -69,7 +69,7 @@ fn main() {
 	unsafe { lkl_sys_halt(); }
 	exit(1);
     }
-    let mount_point = from_cstr(mpoint);
+    /*let mount_point = [..]);
     println!("mounted at {:?}", mount_point);
     let mut params = [ptr::null::<c_ulong>(); 5];
     let dir = mount_point.as_ptr().cast::<c_ulong>();
@@ -79,7 +79,7 @@ fn main() {
         r = lkl_syscall(__lkl__NR_chdir as i64, ptr::addr_of_mut!(params).cast::<c_long>());
     }
     println!("chdir {:}", r);
-    print_error(&(r as i32));
+    print_error(&(r as i32));*/
     unsafe {
         let r = lkl_umount_dev(disk_id, partition, 0, 1000) as i32;
         if r < 0 {

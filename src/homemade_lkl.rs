@@ -1,10 +1,21 @@
 pub mod lklfuncs {
     use lklh::*;
-    pub fn lkl_sys_open(
-        file: *const ::std::os::raw::c_char,
-        flags: ::std::os::raw::c_int,
-        mode: ::std::os::raw::c_int,
-    ) -> ::std::os::raw::c_long {
+
+    pub fn lkl_sys_open<'a>(file: &'a str, flags: i32, mode: i32) -> c_long {
+        let mut filename = String::from(file);
+        if file.chars.last() != "\0" {
+            filename.push_str("\0");
+        }
+        return lkl_syscall(
+            __lkl__NR_openat,
+            LKL_AT_FDCWD,
+            to_cstr(filename)
+                .expect("lkl_sys_open failed to parse filename")
+                .as_ptr()
+                .cast(),
+            flags,
+            mode,
+        );
     }
     /*pub fn lkl_sys_creat(
             file: *const ::std::os::raw::c_char,

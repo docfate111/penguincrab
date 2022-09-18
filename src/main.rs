@@ -165,7 +165,7 @@ fn main() {
         filesystem_type: None,
         filesystem_options: None,
     });
-    let mut params = [ptr::null::<c_ulong>(); 5];
+    /*let mut params = [ptr::null::<c_ulong>(); 5];
     params[0] = to_cstr("/\0").unwrap().as_ptr().cast::<c_ulong>();
     let r;
     unsafe {
@@ -173,8 +173,10 @@ fn main() {
             __lkl__NR_chdir as i64,
             ptr::addr_of_mut!(params).cast::<c_long>(),
         );
-    }
-    println!("chdir {:}", r);
+    }*/
+    let r = lkl_sys_open("/test/f", LKL_O_RDWR, 0);
+    println!("open fd {:}", r);
     print_error(&(r as i32));
+
     exit(0);
 }

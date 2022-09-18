@@ -5,7 +5,7 @@ pub mod lklh;
 //pub mod lklfuncs; linker error allows but you can't use in main?
 pub use lklh::lklh::*;
 pub use lklh::*;
-//pub use lklfuncs::*;
+pub use std::ptr;
 /**lkl_host_operations - host operations used by the Linux kernel
  *
  * These operations must be provided by a host library or by the application
@@ -456,4 +456,171 @@ pub fn print_error<'a>(err: &i32) {
             eprintln!("unparseable string");
         }
     }
+}
+
+pub fn lkl_sys_open<'a>(file: &'a str, flags: u32, mode: u32) -> c_long {
+    let mut filename = String::from(file);
+    if file.chars().last().unwrap() != '\0' {
+        filename.push_str("\0");
+    }
+    let mut params = [0 as c_long; 6];
+    params[0] = LKL_AT_FDCWD as c_long;
+    params[1] = to_cstr(&filename)
+        .expect("lkl_sys_open failed to parse filename")
+        .as_ptr() as c_long;
+    params[2] = flags as c_long;
+    params[3] = mode as c_long;
+    let ret_val;
+    unsafe {
+        ret_val = lkl_syscall(
+            __lkl__NR_openat as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_read(fd: u32, buf: &mut Vec<u8>, count: u32) -> c_long {
+    let mut params = [0 as c_long; 6];
+    params[0] = fd as c_long;
+    let mut buffy = buf.clone();
+    params[1] = buffy.as_mut_ptr() as c_long;
+    params[2] = count as c_long;
+    let ret_val;
+    unsafe {
+        ret_val = lkl_syscall(
+            __lkl__NR_read as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
+    }
+    *buf = buffy.clone();
+    return ret_val;
+}
+
+pub fn lkl_sys_write(fd: u32, buf: &Vec<u8>, count: u32) -> c_long {
+    let mut params = [0 as c_long; 6];
+    params[0] = fd as c_long;
+    params[1] = buf.as_ptr() as c_long;
+    params[2] = count as c_long;
+    let ret_val;
+    unsafe {
+        ret_val = lkl_syscall(
+            __lkl__NR_write as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_close(fd: u32) -> c_long {
+    let mut params = [0 as c_long; 6];
+    params[0] = fd as c_long;
+    let ret_val;
+    unsafe {
+        ret_val = lkl_syscall(
+            __lkl__NR_close as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
+    }
+    return ret_val;
+}
+
+/*pub fn lkl_sys_stat(fd: u32, stat: &mut lkl_stat) -> {
+for some reason there is no __lkl__NR_stat constant
+}*/
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct lkl_stat {
+    pub st_dev: c_ulong,
+    pub st_ino: c_ulong,
+    pub st_mode: c_ulong,
+    pub st_nlink: c_uint,
+    pub st_uid: c_uint,
+    pub st_gid: c_uint,
+    pub st_rdev: c_ulong,
+    pub __pad1: c_ulong,
+    pub st_size: c_ulong,
+    pub st_blksize: c_int,
+    pub __pad2: c_int,
+    pub st_blocks: c_long,
+    pub lkl_st_atime: c_long,
+    pub st_atime_nsec: c_long,
+    pub lkl_st_mtime: c_long,
+    pub st_mtime_nsec: c_long,
+    pub lkl_st_ctime: c_ulong,
+    pub st_ctime_nsec: c_ulong,
+    pub __unused4: c_uint,
+    pub __unused5: c_uint,
+}
+
+pub fn lkl_sys_fstat(fd: u32, stat: &mut lkl_stat) -> c_long {
+    let mut params = [0 as c_long; 6];
+    params[0] = fd as c_long;
+    params[1] = (stat as *mut _) as c_long;
+    let ret_val;
+    unsafe {
+        ret_val = lkl_syscall(
+            __lkl__NR_fstat as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
+    }
+    return ret_val;
+}
+
+/* no NR_lstat
+pub fn lkl_sys_lstat(file: u32, stat: &mut lkl_stat) -> c_long {
+    let mut filename = String::from(file);
+        if file.chars().last().unwrap() != '\0' {
+                filename.push_str("\0");
+        }
+    let mut params = [0 as c_long; 6];
+    params[0] = to_cstr(&filename)
+                .expect("lkl_sys_lstat failed to parse filename")
+                .as_ptr() as c_long;
+    params[1] = (stat as *mut _) as c_long;
+    let ret_val;
+    unsafe { ret_val = lkl_syscall(__lkl__NR_lstat as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>()); }
+    return ret_val;
+}*/
+
+pub fn lkl_sys_lseek(fd: u32, offset: u32, origin: u32) -> c_long {
+    let mut params = [0 as c_long; 6];
+    params[0] = fd as c_long;
+    params[1] = offset as c_long;
+    params[2] = origin as c_long;
+    let ret_val;
+    unsafe {
+        ret_val = lkl_syscall(
+            __lkl__NR_lseek as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_mmap(
+    addr: u64,
+    length: usize,
+    prot: i32,
+    flags: i32,
+    fd: u32,
+    offset: u32,
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    params[0] = addr as c_long;
+    params[1] = length as c_long;
+    params[2] = prot as c_long;
+    params[3] = flags as c_long;
+    params[4] = fd as c_long;
+    params[5] = offset as c_long;
+    let ret_val;
+    unsafe {
+        ret_val = lkl_syscall(
+            __lkl__NR_mmap as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
+    }
+    return ret_val;
 }

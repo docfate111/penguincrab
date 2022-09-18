@@ -3,3 +3,4 @@ src/*.swp
 *.o
 *.so
 *.a
+.gitignore

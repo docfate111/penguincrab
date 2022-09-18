@@ -133,8 +133,8 @@ impl Drop for LklSetup {
         unsafe {
             let r = lkl_umount_dev(self.disk_id, self.partition, 0, 1000) as i32;
             if r < 0 {
-                eprintln!("lkl_umount_dev: ");
-                print_error(&r);
+                //eprintln!("lkl_umount_dev: ");
+                //print_error(&r);
             }
             lkl_disk_remove(self.disk);
             lkl_sys_halt();
@@ -158,15 +158,13 @@ fn main() {
         }
         Some(k) => k,
     };
-    {
-        let _server = LklSetup::new(LklSetupArgs {
-            filesystem_image: filename,
-            boot_settings: None,
-            partition_num: None,
-            filesystem_type: None,
-            filesystem_options: None,
-        });
-    };
+    let _server = LklSetup::new(LklSetupArgs {
+        filesystem_image: filename,
+        boot_settings: None,
+        partition_num: None,
+        filesystem_type: None,
+        filesystem_options: None,
+    });
     let mut params = [ptr::null::<c_ulong>(); 5];
     params[0] = to_cstr("/\0").unwrap().as_ptr().cast::<c_ulong>();
     let r;

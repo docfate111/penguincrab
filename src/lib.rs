@@ -3,6 +3,7 @@ pub use std::ffi::{CStr, CString};
 pub use std::os::raw::{c_char, c_int, c_long, c_uint, c_ulong};
 pub mod lklh;
 //pub mod lklfuncs; linker error allows but you can't use in main?
+pub use lklh::lklh::*;
 pub use lklh::*;
 //pub use lklfuncs::*;
 /**lkl_host_operations - host operations used by the Linux kernel
@@ -425,11 +426,19 @@ pub fn from_cstr(some_str: *mut c_char) -> String {
     String::from_utf8_lossy(cstr.to_bytes()).into_owned()
 }
 
-pub fn to_cstr<'a>(rust_str: &'a str) -> &CStr {
-    if rust_str.chars().last().unwrap() != '\0' {
-    	eprintln!("{} must be null terminated(this function can't append null due to ownership rules)", rust_str);
+pub fn to_cstr<'a>(rust_str: &'a str) -> Option<&CStr> {
+    if rust_str.matches("\0").count() > 1 {
+        eprintln!(
+            "String \"{}\" must not contain null bytes at the position not at the end",
+            rust_str
+        );
+        return None;
     }
-    CStr::from_bytes_with_nul(rust_str.as_bytes()).unwrap()
+    if rust_str.chars().last().unwrap() != '\0' {
+        eprintln!("String \"{}\" must be null terminated (this function can't append null due to ownership rules)", rust_str);
+        return None;
+    }
+    return Some(&CStr::from_bytes_with_nul(rust_str.as_bytes()).unwrap());
 }
 
 pub fn strerror<'a>(err: &i32) -> Result<&'a str, Utf8Error> {

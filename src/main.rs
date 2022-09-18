@@ -12,16 +12,12 @@ pub struct LklSetup {
 
 impl LklSetup {
     pub fn new(
-        filesystem_image: String,
-        boot_settings: Option<String>,
-        partition_num: Option<u32>,
-        filesystem_type: Option<String>,
-        filesystem_options: Option<String>,
-    ) -> Result<LklSetup, &'static str> {
+    arg: LklSetupArgs
+	) -> Result<LklSetup, &'static str> {
         let file = match File::options()
             .read(true)
             .write(true)
-            .open(filesystem_image)
+            .open(arg.filesystem_image)
         {
             Err(e) => {
                 eprintln!("Error opening {:}", e);
@@ -34,7 +30,7 @@ impl LklSetup {
             fd: file.as_raw_fd(),
             ops: 0,
         };
-        let boot_arg = match boot_settings {
+        let boot_arg = match arg.boot_settings {
             Some(k) => to_cstr(&k).as_ptr().cast(),
             None => to_cstr("mem=128M loglevel=8\0").as_ptr().cast(),
         };
@@ -60,8 +56,8 @@ impl LklSetup {
             }
             return Err("Couldn't add disk");
         }
-        let partition = partition_num.unwrap_or(0);
-        let fs_type = &filesystem_type.unwrap_or("ext4\0".to_string()).to_owned()[..];
+        let partition = arg.partition_num.unwrap_or(0);
+        let fs_type = &arg.filesystem_type.unwrap_or("ext4\0".to_string()).to_owned()[..];
         let default_options = match fs_type {
             "ext4" => "errors=remount-ro\0",
             "btrfs" => "thread_pool=1\0",
@@ -69,7 +65,7 @@ impl LklSetup {
             "reiserfs" => "acl,user_xattr\0",
             &_ => "\0",
         };
-        let mount_options = filesystem_options.unwrap_or(default_options.to_string());
+        let mount_options = arg.filesystem_options.unwrap_or(default_options.to_string());
 	let msize: u32 = 100;
         let mut mpoint = vec![0u8; msize as usize];
         let ret;
@@ -116,6 +112,14 @@ impl Drop for LklSetup {
     }
 }
 
+pub struct LklSetupArgs {
+ 	filesystem_image: String,
+        boot_settings: Option<String>,
+        partition_num: Option<u32>,
+        filesystem_type: Option<String>,
+        filesystem_options: Option<String>,
+}
+
 fn main() {
     let filename = match args().nth(1) {
         None => {
@@ -125,7 +129,14 @@ fn main() {
         Some(k) => k,
     };
     {
-    let _server = LklSetup::new(filename, None, None, None, None);
+    let _server = LklSetup::new(
+	LklSetupArgs {
+		filesystem_image: filename, 
+		boot_settings: None, 
+		partition_num: None, 
+		filesystem_type: None, 
+		filesystem_options: None,
+	});
     };
 	/*arams[0] = dir;
     let r;

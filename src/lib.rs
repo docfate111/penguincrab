@@ -425,10 +425,11 @@ pub fn from_cstr(some_str: *mut c_char) -> String {
     String::from_utf8_lossy(cstr.to_bytes()).into_owned()
 }
 
-pub fn to_cstr<'a>(rust_str: &'a str) -> *const c_char {
-    let mut x = rust_str.to_owned();
-    x.push_str("\0");
-    CStr::from_bytes_with_nul(x.as_bytes()).unwrap().as_ptr().cast()
+pub fn to_cstr<'a>(rust_str: &'a str) -> &CStr {
+    if rust_str.chars().last().unwrap() != '\0' {
+    	eprintln!("{} must be null terminated(this function can't append null due to ownership rules)", rust_str);
+    }
+    CStr::from_bytes_with_nul(rust_str.as_bytes()).unwrap()
 }
 
 pub fn strerror<'a>(err: &i32) -> Result<&'a str, Utf8Error> {

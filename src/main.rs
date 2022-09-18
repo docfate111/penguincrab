@@ -2,7 +2,6 @@ use penguincrab::*;
 use std::env::args;
 use std::fs::File;
 use std::process::exit;
-//use std::ptr;
 use std::os::unix::io::AsRawFd;
 
 pub struct LklSetup {
@@ -36,8 +35,8 @@ impl LklSetup {
             ops: 0,
         };
         let boot_arg = match boot_settings {
-            Some(k) => to_cstr(&k),
-            None => to_cstr("mem=128M loglevel=8"),
+            Some(k) => to_cstr(&k).as_ptr().cast(),
+            None => to_cstr("mem=128M loglevel=8\0").as_ptr().cast(),
         };
         let disk_id;
         unsafe {
@@ -62,25 +61,25 @@ impl LklSetup {
             return Err("Couldn't add disk");
         }
         let partition = partition_num.unwrap_or(0);
-        let fs_type = &filesystem_type.unwrap_or("ext4".to_string()).to_owned()[..];
+        let fs_type = &filesystem_type.unwrap_or("ext4\0".to_string()).to_owned()[..];
         let default_options = match fs_type {
-            "ext4" => "errors=remount-ro",
-            "btrfs" => "thread_pool=1",
-            "gfs2" => "acl",
-            "reiserfs" => "acl,user_xattr",
-            &_ => "",
+            "ext4" => "errors=remount-ro\0",
+            "btrfs" => "thread_pool=1\0",
+            "gfs2" => "acl\0",
+            "reiserfs" => "acl,user_xattr\0",
+            &_ => "\0",
         };
         let mount_options = filesystem_options.unwrap_or(default_options.to_string());
-        let msize: u32 = 100;
+	let msize: u32 = 100;
         let mut mpoint = vec![0u8; msize as usize];
         let ret;
         unsafe {
             ret = lkl_mount_dev(
                 disk_id,
                 partition,
-                to_cstr(&fs_type),
+                to_cstr(&fs_type).as_ptr().cast(),
                 0,
-                to_cstr(&mount_options),
+                to_cstr(&mount_options).as_ptr().cast(),
                 mpoint.as_mut_ptr().cast(),
                 msize,
             ) as i32;

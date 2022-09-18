@@ -624,3 +624,386 @@ pub fn lkl_sys_mmap(
     }
     return ret_val;
 }
+
+/*pub fn lkl_sys_getdents64(
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall(__lkl__NR_getdents64 as c_long,
+        ptr::addr_of_mut!(params).cast::<c_long>(),
+    );
+    }
+    return ret_val
+}
+
+pub fn lkl_sys_pread64(
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall(__lkl__NR_pread64 as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_pwrite64(
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall(__lkl__NR_pwrite64 as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_rename(
+) -> c_long {
+    return lkl_sys_renameat(LKL_AT_FDCWD, old, LKL_AT_FDCWD, new);
+}
+pub fn lkl_sys_renameat( ) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall(__lkl__NR_renameat as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_fsync() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_fsync as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+
+pub fn lkl_sys_fdatasync() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall(__lkl__NR_fdatasync as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_syncfs() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall(__lkl__NR_syncfs as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_sendfile() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall(__lkl__NR_sendfile as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_access() -> c_long {
+) -> c_long {
+    return lkl_sys_faccessat(LKL_AT_FDCWD, file, mode);
+}
+
+pub fn lkl_sys_faccessat() -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_faccessat as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_ftruncate() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_ftruncate as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_truncate() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_truncate as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_statfs() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall(__lkl__NR_statfs as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_fstatfs() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_fstatfs as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_utimes() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_utimes as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_mkdirat() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall(__lkl__NR_mkdirat as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_mkdir() -> c_long {
+     return lkl_sys_mkdirat(LKL_AT_FDCWD, path, mode);
+}
+
+pub fn lkl_sys_rmdir() -> c_long {
+      return lkl_sys_unlinkat(LKL_AT_FDCWD, path, LKL_AT_REMOVEDIR);
+}
+
+pub fn lkl_sys_link() -> c_long {
+    return lkl_sys_linkat(LKL_AT_FDCWD, existing, LKL_AT_FDCWD, new, 0);
+}
+
+pub fn lkl_sys_linkat() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_linkat as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_unlink() -> c_long {
+     return lkl_sys_linkat(LKL_AT_FDCWD, existing, LKL_AT_FDCWD, new, 0);
+}
+
+pub fn lkl_sys_unlinkat() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_unlinkat as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_symlink() -> c_long {
+    return lkl_sys_symlinkat(existing, LKL_AT_FDCWD, new);
+}
+
+pub fn lkl_sys_symlinkat() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_ as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_readlink() -> c_long {
+return lkl_sys_readlinkat(LKL_AT_FDCWD, path, buf, bufsize);
+}
+
+pub fn lkl_sys_readlinkat() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_readlinkat as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_chmod() -> c_long {
+     return lkl_sys_fchmodat(LKL_AT_FDCWD, path, mode);
+}
+
+pub fn lkl_sys_fchmodat() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_fchmodat as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_fchmod() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_fchmod as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_chown() -> c_long {
+    lkl_sys_fchownat(LKL_AT_FDCWD, path, uid, gid, 0);
+}
+
+pub fn lkl_sys_fchownat() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_fchownat as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_fchown() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_fchown as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_setxattr() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_setxattr as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_listxattr() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_listxattr as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+
+pub fn lkl_sys_llistxattr() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_llistxattr as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+
+pub fn lkl_sys_removexattr() -> c_long {
+) -> c_long {
+    let mut params = [0 as c_long; 6];
+    let ret_val;
+    unsafe {
+        ret_val =
+    lkl_syscall( __lkl__NR_removexattr as c_long,
+    ptr::addr_of_mut!(params).cast::<c_long>(),
+    }
+    return ret_val;
+}
+// copy and paste for __lkl__NR_lremovexattr and __lkl_NR_fremovexattr
+*/
+pub fn lkl_sys_fallocate(fd: i64, mode: i64, offset: i64, len: i64) -> c_long {
+    let mut params = [0 as c_long; 6];
+    params[0] = fd as c_long;
+    params[1] = mode as c_long;
+    params[2] = offset as c_long;
+    params[3] = len as c_long;
+    let ret_val;
+    unsafe {
+        ret_val = lkl_syscall(
+            __lkl__NR_fallocate as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
+    }
+    return ret_val;
+}

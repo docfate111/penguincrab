@@ -426,7 +426,9 @@ pub fn from_cstr(some_str: *mut c_char) -> String {
 }
 
 pub fn to_cstr<'a>(rust_str: &'a str) -> *const c_char {
-    CStr::from_bytes_with_nul(rust_str.as_bytes()).unwrap().as_ptr().cast()
+    let mut x = rust_str.to_owned();
+    x.push_str("\0");
+    CStr::from_bytes_with_nul(x.as_bytes()).unwrap().as_ptr().cast()
 }
 
 pub fn strerror<'a>(err: &i32) -> Result<&'a str, Utf8Error> {

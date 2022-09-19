@@ -482,10 +482,11 @@ pub fn lkl_sys_openat(dfd: i32, file: &str, flags: u32, mode: u32) -> c_long {
     return ret_val;
 }
 
-pub fn lkl_sys_read(fd: i32, buf: &mut Vec<u8>, count: u32) -> c_long {
+pub fn lkl_sys_read(fd: i32, mut buf: &mut [u8], count: usize) -> c_long {
     let mut params = [0 as c_long; 6];
     params[0] = fd as c_long;
     params[1] = buf.as_mut_ptr() as c_long;
+//.as_mut_ptr() as c_long;
     params[2] = count as c_long;
     let ret_val;
     unsafe {
@@ -497,7 +498,7 @@ pub fn lkl_sys_read(fd: i32, buf: &mut Vec<u8>, count: u32) -> c_long {
     return ret_val;
 }
 
-pub fn lkl_sys_write(fd: i32, buf: &Vec<u8>, count: u32) -> c_long {
+pub fn lkl_sys_write(fd: i32, buf: &[u8], count: usize) -> c_long {
     let mut params = [0 as c_long; 6];
     params[0] = fd as c_long;
     params[1] = buf.as_ptr() as c_long;
@@ -635,7 +636,7 @@ pub struct lkl_linux_dirent64 {
     pub d_name: [c_ulong; 100],
 }
 
-pub fn lkl_sys_getdents64(fd: i32, dirent: &mut lkl_linux_dirent64, count: u32) -> c_long {
+pub fn lkl_sys_getdents64(fd: i32, dirent: &mut lkl_linux_dirent64, count: usize) -> c_long {
     let mut params = [0 as c_long; 6];
     params[0] = fd as c_long;
     params[1] = (dirent as *mut _) as c_long;
@@ -650,7 +651,7 @@ pub fn lkl_sys_getdents64(fd: i32, dirent: &mut lkl_linux_dirent64, count: u32) 
     return ret_val;
 }
 
-pub fn lkl_sys_pread64(fd: i32, buf: &mut Vec<u8>, count: u32, off: u64) -> c_long {
+pub fn lkl_sys_pread64(fd: i32, buf: &mut [u8], count: usize, off: u64) -> c_long {
     let mut params = [0 as c_long; 6];
     params[0] = fd as c_long;
     params[1] = buf.as_mut_ptr() as c_long;
@@ -667,7 +668,7 @@ pub fn lkl_sys_pread64(fd: i32, buf: &mut Vec<u8>, count: u32, off: u64) -> c_lo
     return ret_val;
 }
 
-pub fn lkl_sys_pwrite64(fd: i32, buf: &Vec<u8>, count: u32, off: u64) -> c_long {
+pub fn lkl_sys_pwrite64(fd: i32, buf: &[u8], count: usize, off: u64) -> c_long {
     let mut params = [0 as c_long; 6];
     params[0] = fd as c_long;
     params[1] = buf.as_ptr() as c_long;
@@ -746,7 +747,7 @@ pub fn lkl_sys_syncfs(fd: i32) -> c_long {
     return ret_val;
 }
 
-pub fn lkl_sys_sendfile(out_fd: i32, in_fd: i32, offset: &mut Vec<u8>, count: u32) -> c_long {
+pub fn lkl_sys_sendfile(out_fd: i32, in_fd: i32, offset: &mut [u8], count: usize) -> c_long {
     let mut params = [0 as c_long; 6];
     params[0] = out_fd as c_long;
     params[1] = in_fd as c_long;
@@ -1003,11 +1004,11 @@ pub fn lkl_sys_symlinkat(oldname: &str, newfd: i32, newname: &str) -> c_long {
     return ret_val;
 }
 
-pub fn lkl_sys_readlink(pathname: &str, buf: &mut Vec<u8>, bufsize: i32) -> c_long {
+pub fn lkl_sys_readlink(pathname: &str, buf: &mut [u8], bufsize: i32) -> c_long {
     return lkl_sys_readlinkat(LKL_AT_FDCWD, pathname, buf, bufsize);
 }
 
-pub fn lkl_sys_readlinkat(dfd: i32, pathname: &str, buf: &mut Vec<u8>, bufsize: i32) -> c_long {
+pub fn lkl_sys_readlinkat(dfd: i32, pathname: &str, buf: &mut [u8], bufsize: i32) -> c_long {
     let mut file = String::from(pathname);
     if pathname.chars().last().unwrap() != '\0' {
         file.push_str("\0");
@@ -1113,8 +1114,8 @@ pub fn lkl_sys_fchown(fd: i32, user: u32, group: u32) -> c_long {
 pub fn lkl_sys_setxattr(
     pathname: &str,
     strname: &str,
-    value: &Vec<u8>,
-    size: u32,
+    value: &[u8],
+    size: usize,
     flags: u32,
 ) -> c_long {
     let mut file = String::from(pathname);
@@ -1145,7 +1146,7 @@ pub fn lkl_sys_setxattr(
     return ret_val;
 }
 
-pub fn lkl_sys_listxattr(pathname: &str, list: &mut Vec<u8>, size: u32) -> c_long {
+pub fn lkl_sys_listxattr(pathname: &str, list: &mut [u8], size: usize) -> c_long {
     let mut file = String::from(pathname);
     if pathname.chars().last().unwrap() != '\0' {
         file.push_str("\0");
@@ -1166,7 +1167,7 @@ pub fn lkl_sys_listxattr(pathname: &str, list: &mut Vec<u8>, size: u32) -> c_lon
     return ret_val;
 }
 
-pub fn lkl_sys_llistxattr(pathname: &str, list: &mut Vec<u8>, size: u32) -> c_long {
+pub fn lkl_sys_llistxattr(pathname: &str, list: &mut [u8], size: usize) -> c_long {
     let mut file = String::from(pathname);
     if pathname.chars().last().unwrap() != '\0' {
         file.push_str("\0");
@@ -1214,7 +1215,7 @@ pub fn lkl_sys_removexattr(pathname: &str, removename: &str) -> c_long {
 }
 // copy and paste for __lkl__NR_lremovexattr and __lkl_NR_fremovexattr
 
-pub fn lkl_sys_getxattr(pathname: &str, pairname: &str, value: &mut Vec<u8>, size: u32) -> c_long {
+pub fn lkl_sys_getxattr(pathname: &str, pairname: &str, value: &mut [u8], size: usize) -> c_long {
     let mut file = String::from(pathname);
     if pathname.chars().last().unwrap() != '\0' {
         file.push_str("\0");

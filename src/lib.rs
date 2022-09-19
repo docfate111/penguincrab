@@ -747,19 +747,25 @@ pub fn lkl_sys_syncfs(fd: i32) -> c_long {
     return ret_val;
 }
 
-/*
-pub fn lkl_sys_sendfile() -> c_long {
-) -> c_long {
+pub fn lkl_sys_sendfile(out_fd: i32, in_fd: i32, offset: &mut Vec<u8>, count: u32) -> c_long {
     let mut params = [0 as c_long; 6];
+    params[0] = out_fd as c_long;
+    params[1] = in_fd as c_long;
+    let mut buffy = offset.clone();
+    params[2] = buffy.as_mut_ptr() as c_long;
+    params[3] = count as c_long;
     let ret_val;
     unsafe {
-        ret_val =
-    lkl_syscall(__lkl__NR_sendfile as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
+        ret_val = lkl_syscall(
+            __lkl__NR_sendfile as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
     }
+    *offset = buffy;
     return ret_val;
 }
 
+/*
 pub fn lkl_sys_access() -> c_long {
 ) -> c_long {
     return lkl_sys_faccessat(LKL_AT_FDCWD, file, mode);

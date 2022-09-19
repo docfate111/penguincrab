@@ -772,7 +772,7 @@ pub fn lkl_sys_access(file: &str, mode: i32) -> c_long {
 pub fn lkl_sys_faccessat(dfd: i32, filename: &str, mode: i32) -> c_long {
     let mut file = String::from(filename);
     if filename.chars().last().unwrap() != '\0' {
-        file.push_str("/0");
+        file.push_str("\0");
     }
     let mut params = [0 as c_long; 6];
     params[0] = dfd as c_long;
@@ -808,7 +808,7 @@ pub fn lkl_sys_truncate(filename: &str, length: c_long) -> c_long {
     let mut params = [0 as c_long; 6];
     let mut file = String::from(filename);
     if filename.chars().last().unwrap() != '\0' {
-        file.push_str("/0");
+        file.push_str("\0");
     }
     params[0] = to_cstr(&file)
         .expect("lkl_sys_truncate received an invalid filename")
@@ -845,7 +845,7 @@ pub fn lkl_sys_statfs(pathname: &str, buf: &mut lkl_statfs) -> c_long {
     let mut params = [0 as c_long; 6];
     let mut file = String::from(pathname);
     if pathname.chars().last().unwrap() != '\0' {
-        file.push_str("/0");
+        file.push_str("\0");
     }
     params[0] = to_cstr(&file)
         .expect("lkl_sys_statfs got invalid pathname")
@@ -891,7 +891,7 @@ pub fn lkl_sys_utimes() -> c_long {
 pub fn lkl_sys_mkdirat(dfd: i32, pathname: &str, mode: u32) -> c_long {
     let mut file = String::from(pathname);
     if pathname.chars().last().unwrap() != '\0' {
-        file.push_str("/0");
+        file.push_str("\0");
     }
     let mut params = [0 as c_long; 6];
     params[0] = dfd as c_long;
@@ -917,30 +917,47 @@ pub fn lkl_sys_rmdir(path: &str) -> c_long {
     return lkl_sys_unlinkat(LKL_AT_FDCWD, path, LKL_AT_REMOVEDIR);
 }
 
-/*pub fn lkl_sys_link() -> c_long {
+pub fn lkl_sys_link(existing: &str, new: &str) -> c_long {
     return lkl_sys_linkat(LKL_AT_FDCWD, existing, LKL_AT_FDCWD, new, 0);
 }
 
-pub fn lkl_sys_linkat() -> c_long {
-) -> c_long {
+pub fn lkl_sys_linkat(oldfd: i32, oldname: &str, newfd: i32, newname: &str, flags: u32) -> c_long {
+    let mut oldfile = String::from(oldname);
+    if oldname.chars().last().unwrap() != '\0' {
+        oldfile.push_str("\0");
+    }
+    let mut newfile = String::from(newname);
+    if newname.chars().last().unwrap() != '\0' {
+        newfile.push_str("\0");
+    }
     let mut params = [0 as c_long; 6];
+    params[0] = oldfd as c_long;
+    params[1] = to_cstr(&oldfile)
+        .expect("lkl_sys_linkat received an invalid oldname")
+        .as_ptr() as c_long;
+    params[2] = newfd as c_long;
+    params[3] = to_cstr(&newfile)
+        .expect("lkl_sys_linkat received an invalid newname")
+        .as_ptr() as c_long;
+    params[4] = flags as c_long;
     let ret_val;
     unsafe {
-        ret_val =
-    lkl_syscall( __lkl__NR_linkat as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
+        ret_val = lkl_syscall(
+            __lkl__NR_linkat as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
     }
     return ret_val;
 }
 
-pub fn lkl_sys_unlink() -> c_long {
-     return lkl_sys_linkat(LKL_AT_FDCWD, existing, LKL_AT_FDCWD, new, 0);
-}*/
+pub fn lkl_sys_unlink(existing: &str, new: &str) -> c_long {
+    return lkl_sys_linkat(LKL_AT_FDCWD, existing, LKL_AT_FDCWD, new, 0);
+}
 
 pub fn lkl_sys_unlinkat(dfd: i32, pathname: &str, flag: u32) -> c_long {
     let mut file = String::from(pathname);
     if pathname.chars().last().unwrap() != '\0' {
-        file.push_str("/0");
+        file.push_str("\0");
     }
     let mut params = [0 as c_long; 6];
     params[0] = dfd as c_long;

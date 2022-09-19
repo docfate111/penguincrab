@@ -456,13 +456,17 @@ pub fn print_error<'a>(err: &i32) {
     }
 }
 
-pub fn lkl_sys_open<'a>(file: &'a str, flags: u32, mode: u32) -> c_long {
+pub fn lkl_sys_open(file: &str, flags: u32, mode: u32) -> c_long {
+    return lkl_sys_openat(LKL_AT_FDCWD, file, flags, mode);
+}
+
+pub fn lkl_sys_openat(dfd: i32, file: &str, flags: u32, mode: u32) -> c_long {
     let mut filename = String::from(file);
     if file.chars().last().unwrap() != '\0' {
         filename.push_str("\0");
     }
     let mut params = [0 as c_long; 6];
-    params[0] = LKL_AT_FDCWD as c_long;
+    params[0] = dfd as c_long;
     params[1] = to_cstr(&filename)
         .expect("lkl_sys_open failed to parse filename")
         .as_ptr() as c_long;

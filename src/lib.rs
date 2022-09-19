@@ -2,7 +2,6 @@ use core::str::Utf8Error;
 pub use std::ffi::{CStr, CString};
 pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort};
 pub mod lklh;
-//pub mod lklfuncs; linker error allows but you can't use in main?
 pub use lklh::lklh::*;
 pub use lklh::*;
 pub use std::ptr;
@@ -321,7 +320,6 @@ fn bindgen_test_layout_lkl_host_operations() {
 }
 extern "C" {
     pub static lkl_host_ops: lkl_host_operations;
-    //pub fn lkl_sys_open(file: *const c_char, flags: c_int, mode: c_int) -> c_long;
     /**
     * lkl_start_kernel - registers the host operations and starts the kernel
     *
@@ -1144,7 +1142,7 @@ pub fn lkl_sys_setxattr(
 }
 
 pub fn lkl_sys_listxattr(pathname: &str, list: &mut Vec<u8>, size: u32) -> c_long {
-     let mut file = String::from(pathname);
+    let mut file = String::from(pathname);
     if pathname.chars().last().unwrap() != '\0' {
         file.push_str("\0");
     }
@@ -1156,15 +1154,16 @@ pub fn lkl_sys_listxattr(pathname: &str, list: &mut Vec<u8>, size: u32) -> c_lon
     params[2] = size as c_long;
     let ret_val;
     unsafe {
-        ret_val =
-    lkl_syscall( __lkl__NR_listxattr as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
+        ret_val = lkl_syscall(
+            __lkl__NR_listxattr as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
     }
     return ret_val;
 }
 
 pub fn lkl_sys_llistxattr(pathname: &str, list: &mut Vec<u8>, size: u32) -> c_long {
-     let mut file = String::from(pathname);
+    let mut file = String::from(pathname);
     if pathname.chars().last().unwrap() != '\0' {
         file.push_str("\0");
     }
@@ -1176,9 +1175,10 @@ pub fn lkl_sys_llistxattr(pathname: &str, list: &mut Vec<u8>, size: u32) -> c_lo
     params[2] = size as c_long;
     let ret_val;
     unsafe {
-        ret_val =
-    lkl_syscall( __lkl__NR_llistxattr as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
+        ret_val = lkl_syscall(
+            __lkl__NR_llistxattr as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
     }
     return ret_val;
 }
@@ -1190,39 +1190,52 @@ pub fn lkl_sys_removexattr(pathname: &str, removename: &str) -> c_long {
     }
     let mut remove = String::from(removename);
     if removename.chars().last().unwrap() != '\0' {
-	remove.push_str("\0");
-     }
+        remove.push_str("\0");
+    }
     let mut params = [0 as c_long; 6];
-    params[0] = to_cstr(pathname).expect("lkl_sys_removexattr received invalid pathname").as_ptr() as c_long;
-    params[1] = to_cstr(removename).expect("lkl_sys_removexattr received invalid removename").as_ptr() as c_long;
+    params[0] = to_cstr(pathname)
+        .expect("lkl_sys_removexattr received invalid pathname")
+        .as_ptr() as c_long;
+    params[1] = to_cstr(removename)
+        .expect("lkl_sys_removexattr received invalid removename")
+        .as_ptr() as c_long;
     let ret_val;
     unsafe {
-        ret_val =
-    lkl_syscall( __lkl__NR_removexattr as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
+        ret_val = lkl_syscall(
+            __lkl__NR_removexattr as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
     }
     return ret_val;
 }
 // copy and paste for __lkl__NR_lremovexattr and __lkl_NR_fremovexattr
 
 pub fn lkl_sys_getxattr(pathname: &str, pairname: &str, value: &mut Vec<u8>, size: u32) -> c_long {
- 	let mut file = String::from(pathname);
-    	if pathname.chars().last().unwrap() != '\0' {
-        	file.push_str("\0");
-    	}
-    	let mut name = String::from(pairname);
-    	if pairname.chars().last().unwrap() != '\0' {
-		name.push_str("\0");
-     	}
-	let mut params = [0 as c_long; 6];
-	params[0] = to_cstr(&file).expect("lkl_sys_getxattr received invalid pathname").as_ptr() as c_long;
-	params[1] = to_cstr(&name).expect("lkl_sys_getxattr received pair name").as_ptr() as c_long;
-	params[2] = value.as_mut_ptr() as c_long;
-	params[3] = size as c_long; let ret_val;
-	unsafe { ret_val = lkl_syscall(__lkl__NR_getxattr as c_long,
-	ptr::addr_of_mut!(params).cast::<c_long>());
-	}
-	return ret_val;
+    let mut file = String::from(pathname);
+    if pathname.chars().last().unwrap() != '\0' {
+        file.push_str("\0");
+    }
+    let mut name = String::from(pairname);
+    if pairname.chars().last().unwrap() != '\0' {
+        name.push_str("\0");
+    }
+    let mut params = [0 as c_long; 6];
+    params[0] = to_cstr(&file)
+        .expect("lkl_sys_getxattr received invalid pathname")
+        .as_ptr() as c_long;
+    params[1] = to_cstr(&name)
+        .expect("lkl_sys_getxattr received pair name")
+        .as_ptr() as c_long;
+    params[2] = value.as_mut_ptr() as c_long;
+    params[3] = size as c_long;
+    let ret_val;
+    unsafe {
+        ret_val = lkl_syscall(
+            __lkl__NR_getxattr as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
+    }
+    return ret_val;
 }
 
 pub fn lkl_sys_fallocate(fd: i64, mode: i64, offset: i64, len: i64) -> c_long {

@@ -9,24 +9,14 @@ pub struct LklSetup {
     disk: lkl_disk,
     partition: u32,
     disk_id: u32,
+    pub mount_point: String,
 }
 
 impl LklSetup {
     pub fn new(arg: LklSetupArgs) -> Result<LklSetup, &'static str> {
-        let file = match File::options()
-            .read(true)
-            .write(true)
-            .open(arg.filesystem_image)
-        {
-            Err(e) => {
-                eprintln!("Error opening {:}", e);
-                return Err("Can't open filesystem image");
-            }
-            Ok(k) => k,
-        };
         let mut disk = lkl_disk {
             dev: 0,
-            fd: file.as_raw_fd(),
+            fd: arg.filesystem_fd,
             ops: 0,
         };
         let boot_arg = match arg.boot_settings {
@@ -124,6 +114,7 @@ impl LklSetup {
             disk: disk,
             partition: partition,
             disk_id: disk_id,
+            mount_point: mount_point.to_owned(),
         })
     }
 }
@@ -143,7 +134,7 @@ impl Drop for LklSetup {
 }
 
 pub struct LklSetupArgs {
-    filesystem_image: String,
+    filesystem_fd: i32,
     boot_settings: Option<String>,
     partition_num: Option<u32>,
     filesystem_type: Option<String>,
@@ -158,23 +149,27 @@ fn main() {
         }
         Some(k) => k,
     };
-    let _server = LklSetup::new(LklSetupArgs {
-        filesystem_image: filename,
+    let file = match File::options().read(true).write(true).open(filename) {
+        Err(e) => {
+            eprintln!("Error opening {:}", e);
+            exit(1);
+        }
+        Ok(k) => k,
+    };
+    let server = LklSetup::new(LklSetupArgs {
+        filesystem_fd: file.as_raw_fd(),
         boot_settings: None,
         partition_num: None,
         filesystem_type: None,
         filesystem_options: None,
-    });
-    /*let mut params = [ptr::null::<c_ulong>(); 5];
-    params[0] = to_cstr("/\0").unwrap().as_ptr().cast::<c_ulong>();
-    let r;
-    unsafe {
-        r = lkl_syscall(
-            __lkl__NR_chdir as i64,
-            ptr::addr_of_mut!(params).cast::<c_long>(),
-        );
-    }*/
-    let r = lkl_sys_open("/test/f", LKL_O_RDWR, 0);
+    })
+    .unwrap();
+    // remove null byte at the end
+    let mut mpoint = String::from(&server.mount_point.clone()[0..server.mount_point.len() - 1]);
+    println!("{:?}", mpoint);
+
+    mpoint.push_str("/test\0");
+    let r = lkl_sys_open(&mpoint, LKL_O_RDWR | LKL_O_CREAT, 0);
     println!("open fd {:}", r);
     print_error(&(r as i32));
 

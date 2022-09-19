@@ -975,94 +975,146 @@ pub fn lkl_sys_unlinkat(dfd: i32, pathname: &str, flag: u32) -> c_long {
     return ret_val;
 }
 
-/*pub fn lkl_sys_symlink() -> c_long {
+pub fn lkl_sys_symlink(existing: &str, new: &str) -> c_long {
     return lkl_sys_symlinkat(existing, LKL_AT_FDCWD, new);
 }
 
-pub fn lkl_sys_symlinkat() -> c_long {
-) -> c_long {
+pub fn lkl_sys_symlinkat(oldname: &str, newfd: i32, newname: &str) -> c_long {
+    let mut oldfile = String::from(oldname);
+    if oldname.chars().last().unwrap() != '\0' {
+        oldfile.push_str("\0");
+    }
+    let mut newfile = String::from(newname);
+    if newname.chars().last().unwrap() != '\0' {
+        newfile.push_str("\0");
+    }
     let mut params = [0 as c_long; 6];
+    params[0] = to_cstr(&oldfile)
+        .expect("lkl_sys_symlinkat received invalid oldfile")
+        .as_ptr() as c_long;
+    params[1] = newfd as c_long;
+    params[2] = to_cstr(&newfile)
+        .expect("lkl_sys_symlinkat received invalid newfile")
+        .as_ptr() as c_long;
     let ret_val;
     unsafe {
-        ret_val =
-    lkl_syscall( __lkl__NR_ as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
+        ret_val = lkl_syscall(
+            __lkl__NR_symlinkat as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
     }
     return ret_val;
 }
 
-pub fn lkl_sys_readlink() -> c_long {
-return lkl_sys_readlinkat(LKL_AT_FDCWD, path, buf, bufsize);
+pub fn lkl_sys_readlink(pathname: &str, buf: &mut Vec<u8>, bufsize: i32) -> c_long {
+    return lkl_sys_readlinkat(LKL_AT_FDCWD, pathname, buf, bufsize);
 }
 
-pub fn lkl_sys_readlinkat() -> c_long {
-) -> c_long {
+pub fn lkl_sys_readlinkat(dfd: i32, pathname: &str, buf: &mut Vec<u8>, bufsize: i32) -> c_long {
+    let mut file = String::from(pathname);
+    if pathname.chars().last().unwrap() != '\0' {
+        file.push_str("\0");
+    }
     let mut params = [0 as c_long; 6];
+    params[0] = dfd as c_long;
+    params[1] = to_cstr(&file)
+        .expect("lkl_sys_readlinkat received invalid pathname")
+        .as_ptr() as c_long;
+    let mut buffy = buf.clone();
+    params[2] = buffy.as_mut_ptr() as c_long;
+    params[3] = bufsize as c_long;
     let ret_val;
     unsafe {
-        ret_val =
-    lkl_syscall( __lkl__NR_readlinkat as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
+        ret_val = lkl_syscall(
+            __lkl__NR_readlinkat as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
+    }
+    *buf = buffy;
+    return ret_val;
+}
+
+pub fn lkl_sys_chmod(path: &str, mode: u32) -> c_long {
+    return lkl_sys_fchmodat(LKL_AT_FDCWD, path, mode);
+}
+
+pub fn lkl_sys_fchmodat(dirfd: i32, pathname: &str, mode: u32) -> c_long {
+    let mut file = String::from(pathname);
+    if pathname.chars().last().unwrap() != '\0' {
+        file.push_str("\0");
+    }
+    let mut params = [0 as c_long; 6];
+    params[0] = dirfd as c_long;
+    params[1] = to_cstr(&file)
+        .expect("lkl_sys_fchmodat received invalid pathname")
+        .as_ptr() as c_long;
+    params[2] = mode as c_long;
+    let ret_val;
+    unsafe {
+        ret_val = lkl_syscall(
+            __lkl__NR_fchmodat as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
     }
     return ret_val;
 }
 
-pub fn lkl_sys_chmod() -> c_long {
-     return lkl_sys_fchmodat(LKL_AT_FDCWD, path, mode);
-}
-
-pub fn lkl_sys_fchmodat() -> c_long {
-) -> c_long {
+pub fn lkl_sys_fchmod(fd: i32, mode: u32) -> c_long {
     let mut params = [0 as c_long; 6];
+    params[0] = fd as c_long;
+    params[1] = mode as c_long;
     let ret_val;
     unsafe {
-        ret_val =
-    lkl_syscall( __lkl__NR_fchmodat as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
+        ret_val = lkl_syscall(
+            __lkl__NR_fchmod as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
     }
     return ret_val;
 }
 
-pub fn lkl_sys_fchmod() -> c_long {
-) -> c_long {
+pub fn lkl_sys_chown(path: &str, uid: u32, gid: u32) -> c_long {
+    return lkl_sys_fchownat(LKL_AT_FDCWD, path, uid, gid, 0);
+}
+
+pub fn lkl_sys_fchownat(dfd: i32, pathname: &str, uid: u32, gid: u32, flags: u32) -> c_long {
+    let mut file = String::from(pathname);
+    if pathname.chars().last().unwrap() != '\0' {
+        file.push_str("\0");
+    }
     let mut params = [0 as c_long; 6];
+    params[0] = dfd as c_long;
+    params[1] = to_cstr(&file)
+        .expect("lkl_sys_fchownat received invalid pathname")
+        .as_ptr() as c_long;
+    params[2] = uid as c_long;
+    params[3] = gid as c_long;
+    params[4] = flags as c_long;
     let ret_val;
     unsafe {
-        ret_val =
-    lkl_syscall( __lkl__NR_fchmod as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
+        ret_val = lkl_syscall(
+            __lkl__NR_fchownat as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
     }
     return ret_val;
 }
 
-pub fn lkl_sys_chown() -> c_long {
-    lkl_sys_fchownat(LKL_AT_FDCWD, path, uid, gid, 0);
-}
-
-pub fn lkl_sys_fchownat() -> c_long {
-) -> c_long {
+pub fn lkl_sys_fchown(fd: i32, user: u32, group: u32) -> c_long {
     let mut params = [0 as c_long; 6];
+    params[0] = fd as c_long;
+    params[1] = user as c_long;
+    params[2] = group as c_long;
     let ret_val;
     unsafe {
-        ret_val =
-    lkl_syscall( __lkl__NR_fchownat as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
+        ret_val = lkl_syscall(
+            __lkl__NR_fchown as c_long,
+            ptr::addr_of_mut!(params).cast::<c_long>(),
+        );
     }
     return ret_val;
 }
-
-pub fn lkl_sys_fchown() -> c_long {
-) -> c_long {
-    let mut params = [0 as c_long; 6];
-    let ret_val;
-    unsafe {
-        ret_val =
-    lkl_syscall( __lkl__NR_fchown as c_long,
-    ptr::addr_of_mut!(params).cast::<c_long>());
-    }
-    return ret_val;
-}
-
+/*
 pub fn lkl_sys_setxattr() -> c_long {
 ) -> c_long {
     let mut params = [0 as c_long; 6];

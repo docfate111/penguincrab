@@ -2,8 +2,8 @@ use core::str::Utf8Error;
 pub use std::ffi::{CStr, CString};
 pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort};
 pub mod lklh;
-pub use lklh::lklh::*;
-pub use lklh::*;
+pub use lklh::syscall_nos::*;
+pub use lklh::rest::*;
 pub use std::ptr;
 /**lkl_host_operations - host operations used by the Linux kernel
  *

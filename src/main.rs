@@ -185,10 +185,10 @@ fn main() {
     if r < 0 {
 	print_error(&(r as i32)); 
     }
-    const buf_len: usize = 26;
-    let mut read_buf =  [0 as u8; buf_len];
+    const BUF_LEN: usize = 26;
+    let mut read_buf =  [0 as u8; BUF_LEN];
     let readfd = lkl_sys_open(&mpoint, LKL_O_RDONLY, 0) as i32;
-    r = lkl_sys_read(readfd, &mut read_buf, buf_len);
+    r = lkl_sys_read(readfd, &mut read_buf, BUF_LEN);
     println!("{} {:?}", r, String::from_utf8(read_buf.to_vec()).unwrap());
     exit(0);
 }

@@ -74,7 +74,8 @@ pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort
  *
  * @memcpy - copy memory
  * @pci_ops - pointer to PCI host operations
-struct lkl_host_operations {
+*/
+/***struct lkl_host_operations {
         const char *virtio_devices;
 
         void (*print)(const char *str, int len);
@@ -123,7 +124,7 @@ struct lkl_host_operations {
 
         void* (*memcpy)(void *dest, const void *src, unsigned long count);
         struct lkl_dev_pci_ops *pci_ops;
-};*/
+};***/
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

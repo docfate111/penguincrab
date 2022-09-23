@@ -4,6 +4,7 @@ pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort
 pub mod lklh;
 pub use lklh::syscall_nos::*;
 pub use lklh::rest::*;
+pub use lklh::consts::*;
 pub use std::ptr;
 /**lkl_host_operations - host operations used by the Linux kernel
  *
@@ -671,23 +672,9 @@ pub fn lkl_sys_truncate(filename: &str, length: c_long) -> c_long {
     
 }
 
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct lkl_statfs {
-    pub f_type: __lkl__kernel_long_t,
-    pub f_bsize: __lkl__kernel_long_t,
-    pub f_blocks: __lkl__kernel_long_t,
-    pub f_bfree: __lkl__kernel_long_t,
-    pub f_bavail: __lkl__kernel_long_t,
-    pub f_files: __lkl__kernel_long_t,
-    pub f_ffree: __lkl__kernel_long_t,
-    pub f_fsid: __lkl__kernel_fsid_t,
-    pub f_namelen: __lkl__kernel_long_t,
-    pub f_frsize: __lkl__kernel_long_t,
-    pub f_flags: __lkl__kernel_long_t,
-    pub f_spare: [__lkl__kernel_long_t; 4usize],
-}
 
+/*
+redefine lkl_statfs without type aliases
 pub fn lkl_sys_statfs(pathname: &str, buf: &mut lkl_statfs) -> c_long {
     let mut params = [0 as c_long; 6];
     let mut file = String::from(pathname);
@@ -720,7 +707,7 @@ pub fn lkl_sys_fstatfs(fd: i32, buf: &mut lkl_statfs) -> c_long {
         );
     }
     
-}
+}*/
 
 /* syscall doesn't exist?
 pub fn lkl_sys_utimes() -> c_long {

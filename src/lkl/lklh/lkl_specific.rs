@@ -130,9 +130,11 @@ pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort
 #[derive(Debug, Copy, Clone)]
 pub struct lkl_host_operations {
     pub virtio_devices: c_ulong,
-    pub print: ::std::option::Option<unsafe extern "C" fn(str_: *const c_char, len: c_int)>,
-    pub panic: ::std::option::Option<unsafe extern "C" fn()>,
-    pub func_ptrs: [c_ulong; 32usize],
+    //pub print: ::std::option::Option<unsafe extern "C" fn(str_: *const c_char, len: c_int)>,
+    //pub panic: ::std::option::Option<unsafe extern "C" fn()>,
+     pub print: c_ulong,
+     pub panic: c_ulong,
+     pub func_ptrs: [c_ulong; 32usize],
 }
 
 /**
@@ -168,7 +170,7 @@ pub struct lkl_dir {
 }
 
 extern "C" {
-    pub static lkl_host_ops: lkl_host_operations;
+    pub static mut lkl_host_ops: lkl_host_operations;
     /**
     * lkl_start_kernel - registers the host operations and starts the kernel
     *

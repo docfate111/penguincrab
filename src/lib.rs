@@ -23,10 +23,16 @@ impl LklSetup {
             None => to_cstr("mem=128M loglevel=8\0").unwrap().as_ptr().cast(),
         };
         let disk_id;
-        // fn a() {}
-        // lkl_host_ops = a as *const fn() as c_ulong
+       fn on_panic() { println!("an oopsie happened"); }
         unsafe {
-            disk_id = lkl_disk_add(&mut disk) as u32;
+	    lkl_host_ops.panic = match arg.on_panic {
+		Some(k) => (k as *const fn()) as c_ulong,
+		None => (on_panic as *const fn()) as c_ulong,
+	    };
+	    if arg.print.is_some() {
+		lkl_host_ops.print = (arg.print.unwrap() as *const fn()) as c_ulong;
+	    }
+	    disk_id = lkl_disk_add(&mut disk) as u32;
             lkl_start_kernel(&lkl_host_ops, boot_arg);
         }
         if (disk_id as i32) < 0 {
@@ -140,6 +146,8 @@ pub struct LklSetupArgs {
     pub partition_num: Option<u32>,
     pub filesystem_type: Option<String>,
     pub filesystem_options: Option<String>,
+    pub on_panic: Option<fn()>,
+    pub print: Option<fn()>
 }
 
 #[cfg(test)]
@@ -163,6 +171,8 @@ mod tests {
             partition_num: None,
             filesystem_type: None,
             filesystem_options: None,
+	    on_panic: None,
+	    print: None,
         })
         .unwrap();
 

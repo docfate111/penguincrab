@@ -10,12 +10,17 @@ $ cargo build && cargo run
 ```
 
 
-File naming under lklh
+File naming
 
-lkl_specific.rs - defines general structs like lkl_host_ops and functions from the C library
-syscall_nos.rs - system call numbers. If you don't see the one you want compile the kernel with the settings you want and then use bindgen to get the value.
-consts.rs - constants like LKL_O_RDONLY and other flags
-rests.rs - all the other constants
+
+lkl/
+    syscall_wrappers - wrappers for syscalls and tests
+    lklh/
+
+	lkl_specific.rs - defines general structs like lkl_host_ops and functions from the C library
+	syscall_nos.rs - system call numbers. If you don't see the one you want compile the kernel with the settings you want and then use bindgen to get the value.
+	consts.rs - constants like LKL_O_RDONLY and other flags
+	rests.rs - all the other constants
 
 
 later for fuzzing

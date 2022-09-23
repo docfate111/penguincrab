@@ -5,7 +5,6 @@ use std::os::unix::io::AsRawFd;
 use std::process::exit;
 use std::ptr;
 
-
 pub struct LklSetup {
     disk: lkl_disk,
     partition: u32,
@@ -28,8 +27,8 @@ impl LklSetup {
             None => to_cstr("mem=128M loglevel=8\0").unwrap().as_ptr().cast(),
         };
         let disk_id;
-	// fn a() {}
-	// lkl_host_ops = a as *const fn() as c_ulong
+        // fn a() {}
+        // lkl_host_ops = a as *const fn() as c_ulong
         unsafe {
             disk_id = lkl_disk_add(&mut disk) as u32;
             lkl_start_kernel(&lkl_host_ops, boot_arg);
@@ -97,8 +96,8 @@ impl LklSetup {
         let mount_point = String::from_utf8(mpoint).unwrap();
         println!("[*] Filesystem mounted at {:}", mount_point);
         let full = String::from(mount_point);
-	// removing trailing null bytes except leave one
-        let mount_point = &full[0..full.find("\0").unwrap_or(0)+1];
+        // removing trailing null bytes except leave one
+        let mount_point = &full[0..full.find("\0").unwrap_or(0) + 1];
         let mut params = [ptr::null::<c_ulong>(); 5];
         params[0] = to_cstr(&mount_point)
             .expect("mount point has null")
@@ -114,8 +113,8 @@ impl LklSetup {
         if r < 0 {
             return Err("Can't chdir to moint point corrupted filesystem");
         }
-	// return string without null byte
-	let mount_point = &mount_point[0..mount_point.len() - 1];
+        // return string without null byte
+        let mount_point = &mount_point[0..mount_point.len() - 1];
         Ok(LklSetup {
             disk: disk,
             partition: partition,
@@ -175,18 +174,18 @@ fn main() {
     mpoint.push_str("/test591");
     let mut r = lkl_sys_open(&mpoint, LKL_O_RDWR | LKL_O_CREAT, 0);
     if r < 0 {
-	print_error(&(r as i32));
-     }
+        print_error(&(r as i32));
+    }
     let fd = r as i32;
     let buf = "that's what i call riddim\0".as_bytes();
     r = lkl_sys_write(fd, buf, buf.len());
     lkl_sys_close(fd);
     println!("wrote {} bytes", r);
     if r < 0 {
-	print_error(&(r as i32)); 
+        print_error(&(r as i32));
     }
     const BUF_LEN: usize = 26;
-    let mut read_buf =  [0 as u8; BUF_LEN];
+    let mut read_buf = [0 as u8; BUF_LEN];
     let readfd = lkl_sys_open(&mpoint, LKL_O_RDONLY, 0) as i32;
     r = lkl_sys_read(readfd, &mut read_buf, BUF_LEN);
     println!("{} {:?}", r, String::from_utf8(read_buf.to_vec()).unwrap());

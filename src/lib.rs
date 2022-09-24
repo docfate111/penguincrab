@@ -168,6 +168,7 @@ mod tests {
     use std::os::unix::io::AsRawFd;
     #[test]
     fn read_write_close() {
+        // first we open the disk image the kernel will use as its filesystem:
         let filename = "./ext4-00.image";
         let file = match File::options().read(true).write(true).open(filename) {
             Err(e) => {
@@ -175,6 +176,8 @@ mod tests {
             }
             Ok(k) => k,
         };
+        // pass in the file descriptor so the library can read and write
+	// the changes to disk:
         let server = LklSetup::new(LklSetupArgs {
             filesystem_fd: file.as_raw_fd(),
             boot_settings: None,
@@ -192,6 +195,7 @@ mod tests {
         let mut mpoint = server.mount_point.clone();
         mpoint.push_str("/test591\0");
 	let filename = to_cstr(&mpoint).unwrap();
+	// open a file in the mounted filesystem - make sure to use null bytes to terminate CStrings
         let mut r = lkl_sys_open(&filename, LKL_O_RDWR | LKL_O_CREAT, 0);
         ma::assert_ge!(r, 0);
         if r < 0 {
@@ -209,6 +213,7 @@ mod tests {
         let mut read_buf = [0 as u8; BUF_LEN];
         let readfd = lkl_sys_open(&filename, LKL_O_RDONLY, 0) as i32;
         ma::assert_ge!(r, 0);
+	// reading back our message from the file we wrote to:
         r = lkl_sys_read(readfd, &mut read_buf, BUF_LEN);
         assert_eq!(r as usize, BUF_LEN);
         assert_eq!(MSG, String::from_utf8(read_buf.to_vec()).unwrap());

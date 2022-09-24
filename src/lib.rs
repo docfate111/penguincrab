@@ -1,6 +1,7 @@
 pub mod lkl;
 pub use lkl::syscall_wrappers::*;
 
+/// construct this with LklSetup::new()
 pub struct LklSetup {
     disk: lkl_disk,
     partition: u32,
@@ -9,6 +10,7 @@ pub struct LklSetup {
 }
 
 impl LklSetup {
+    /// new parses the settings and initializes the kernel
     pub fn new(arg: LklSetupArgs) -> Result<LklSetup, &'static str> {
         let mut disk = lkl_disk {
             dev: 0,
@@ -128,6 +130,7 @@ impl LklSetup {
     }
 }
 
+/// Unmounts the disk for LKL then removes it and stops the kernel
 impl Drop for LklSetup {
     fn drop(&mut self) {
         unsafe {
@@ -142,6 +145,11 @@ impl Drop for LklSetup {
     }
 }
 
+/// Due to ownership automatically deallocating fds out of scope the file descriptor for
+/// the disk image needs to be passed in.
+/// Next is the boot settings which can be the amount of memory and log level
+/// (i.e. mem=128M loglevel=8
+/// on_panic is the function that runs when there is a panic and print replaces printk
 pub struct LklSetupArgs {
     pub filesystem_fd: i32,
     pub boot_settings: Option<String>,

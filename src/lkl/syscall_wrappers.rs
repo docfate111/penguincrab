@@ -7,6 +7,7 @@ pub use std::ffi::{CStr, CString};
 pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort};
 pub use std::ptr;
 
+// converts C char* to Rust String
 pub fn from_cstr(some_str: *mut c_char) -> String {
     let cstr;
     unsafe {
@@ -15,6 +16,7 @@ pub fn from_cstr(some_str: *mut c_char) -> String {
     String::from_utf8_lossy(cstr.to_bytes()).into_owned()
 }
 
+// converts Rust &str to Option<&CStr>
 pub fn to_cstr<'a>(rust_str: &'a str) -> Option<&CStr> {
     if rust_str.matches("\0").count() > 1 {
         eprintln!(
@@ -30,12 +32,15 @@ pub fn to_cstr<'a>(rust_str: &'a str) -> Option<&CStr> {
     return Some(&CStr::from_bytes_with_nul(rust_str.as_bytes()).unwrap());
 }
 
+// converts lkl_strerror into a Rust string.
+// returns a Result in case converting C String to Rust goes wrong
 pub fn strerror<'a>(err: &i32) -> Result<&'a str, Utf8Error> {
     let char_ptr = unsafe { lkl_strerror(*err) };
     let c_str = unsafe { CStr::from_ptr(char_ptr) };
     c_str.to_str()
 }
 
+// prints out the error based on error from lkl_strerror
 pub fn print_error<'a>(err: &i32) {
     match strerror(err) {
         Ok(k) => {

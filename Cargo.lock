@@ -10,7 +10,7 @@ checksum = "5474f8732dc7e0635ae9df6595bcd39cd30e3cfe8479850d4fa3e69306c19712"
 
 [[package]]
 name = "penguincrab"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "more-asserts",
 ]

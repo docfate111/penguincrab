@@ -8,7 +8,6 @@ This command will take a while to compile since it also builds the kernel:
 $ cargo build && cargo test
 ```
 
-
 File naming
 
 
@@ -21,3 +20,5 @@ lkl/
 	consts.rs - constants like LKL_O_RDONLY and other flags
 	rests.rs - all the other constants
 
+Examples of how to use it
+[first test](https://github.com/docfate111/penguincrab/blob/main/src/lib.rs#L170)

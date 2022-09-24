@@ -1,9 +1,15 @@
 [package]
 name = "penguincrab"
+authors = ["docfate111"]
 version = "0.1.0"
 edition = "2021"
 links = "shared"
 build = "build.rs"
+description = "Rust wrapper for Linux Kernel as a Library"
+license = "MIT"
+repository = "https://github.com/docfate111/penguincrab"
+readme = "README.md"
+homepage = "https://github.com/docfate111/penguincrab"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

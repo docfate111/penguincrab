@@ -132,9 +132,9 @@ pub struct lkl_host_operations {
     pub virtio_devices: c_ulong,
     //pub print: ::std::option::Option<unsafe extern "C" fn(str_: *const c_char, len: c_int)>,
     //pub panic: ::std::option::Option<unsafe extern "C" fn()>,
-     pub print: c_ulong,
-     pub panic: c_ulong,
-     pub func_ptrs: [c_ulong; 32usize],
+    pub print: c_ulong,
+    pub panic: c_ulong,
+    pub func_ptrs: [c_ulong; 32usize],
 }
 
 /**

@@ -1,4 +1,4 @@
-- [ X ] file syscalls
-- [   ] figure out function pointers to pass in print and panic functions to lkl_host_ops
-- [ X ] wrap into structs
-- [   ] rest of the syscalls
+- [X] file syscalls
+- [X] figure out function pointers to pass in print and panic functions to lkl_host_ops
+- [X] wrap into structs
+- [ ] rest of the syscalls

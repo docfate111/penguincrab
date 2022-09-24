@@ -23,16 +23,18 @@ impl LklSetup {
             None => to_cstr("mem=128M loglevel=8\0").unwrap().as_ptr().cast(),
         };
         let disk_id;
-       fn on_panic() { println!("an oopsie happened"); }
+        fn on_panic() {
+            println!("an oopsie happened");
+        }
         unsafe {
-	    lkl_host_ops.panic = match arg.on_panic {
-		Some(k) => (k as *const fn()) as c_ulong,
-		None => (on_panic as *const fn()) as c_ulong,
-	    };
-	    if arg.print.is_some() {
-		lkl_host_ops.print = (arg.print.unwrap() as *const fn()) as c_ulong;
-	    }
-	    disk_id = lkl_disk_add(&mut disk) as u32;
+            lkl_host_ops.panic = match arg.on_panic {
+                Some(k) => (k as *const fn()) as c_ulong,
+                None => (on_panic as *const fn()) as c_ulong,
+            };
+            if arg.print.is_some() {
+                lkl_host_ops.print = (arg.print.unwrap() as *const fn()) as c_ulong;
+            }
+            disk_id = lkl_disk_add(&mut disk) as u32;
             lkl_start_kernel(&lkl_host_ops, boot_arg);
         }
         if (disk_id as i32) < 0 {
@@ -147,15 +149,15 @@ pub struct LklSetupArgs {
     pub filesystem_type: Option<String>,
     pub filesystem_options: Option<String>,
     pub on_panic: Option<fn()>,
-    pub print: Option<fn()>
+    pub print: Option<fn()>,
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::*;
     use more_asserts as ma;
     use std::fs::File;
     use std::os::unix::io::AsRawFd;
-    use crate::*;
     #[test]
     fn read_write_close() {
         let filename = "./ext4-00.image";
@@ -171,8 +173,8 @@ mod tests {
             partition_num: None,
             filesystem_type: None,
             filesystem_options: None,
-	    on_panic: None,
-	    print: None,
+            on_panic: None,
+            print: None,
         })
         .unwrap();
 
@@ -180,8 +182,9 @@ mod tests {
         const MSG: &str = "that's what i call riddim\0";
         // remove null byte at the end
         let mut mpoint = server.mount_point.clone();
-        mpoint.push_str("/test591");
-        let mut r = lkl_sys_open(&mpoint, LKL_O_RDWR | LKL_O_CREAT, 0);
+        mpoint.push_str("/test591\0");
+	let filename = to_cstr(&mpoint).unwrap();
+        let mut r = lkl_sys_open(&filename, LKL_O_RDWR | LKL_O_CREAT, 0);
         ma::assert_ge!(r, 0);
         if r < 0 {
             print_error(&(r as i32));
@@ -196,7 +199,7 @@ mod tests {
             print_error(&(r as i32));
         }
         let mut read_buf = [0 as u8; BUF_LEN];
-        let readfd = lkl_sys_open(&mpoint, LKL_O_RDONLY, 0) as i32;
+        let readfd = lkl_sys_open(&filename, LKL_O_RDONLY, 0) as i32;
         ma::assert_ge!(r, 0);
         r = lkl_sys_read(readfd, &mut read_buf, BUF_LEN);
         assert_eq!(r as usize, BUF_LEN);

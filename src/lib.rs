@@ -189,28 +189,26 @@ mod tests {
     use crate::*;
     use more_asserts as ma;
     #[test]
-    fn readwritetest() {
+    fn separate_later() {
         let server = setup_test();
+
         const BUF_LEN: usize = 26;
         const MSG: &str = "that's what i call riddim\0";
         let mut mpoint = server.mount_point.clone();
         mpoint.push_str("/test591\0");
         let filename = to_cstr(&mpoint).unwrap();
+
         // open a file in the mounted filesystem - make sure to use null bytes to terminate CStrings
         let mut r = lkl_sys_open(&filename, LKL_O_RDWR | LKL_O_CREAT, 0);
         ma::assert_ge!(r, 0);
-        if r < 0 {
-            print_error(&(r as i32));
-        }
+
         let fd = r as i32;
         let buf = MSG.as_bytes();
         r = lkl_sys_write(fd, buf, BUF_LEN);
         assert_eq!(r as usize, BUF_LEN);
         r = lkl_sys_close(fd);
         assert_eq!(r, 0);
-        if r < 0 {
-            print_error(&(r as i32));
-        }
+
         let mut read_buf = [0 as u8; BUF_LEN];
         let readfd = lkl_sys_open(&filename, LKL_O_RDONLY, 0) as i32;
         ma::assert_ge!(r, 0);
@@ -218,5 +216,35 @@ mod tests {
         r = lkl_sys_read(readfd, &mut read_buf, BUF_LEN);
         assert_eq!(r as usize, BUF_LEN);
         assert_eq!(MSG, String::from_utf8(read_buf.to_vec()).unwrap());
+
+        let mut stat = lkl_stat {
+            ..Default::default()
+        };
+        let r = lkl_sys_fstat(readfd, &mut stat);
+        const S_IFREG: u64 = 0o0100000;
+        const S_IFMT: u64 = 0o0170000;
+        const S_IFDIR: u64 = 0o0040000;
+        // check if it is a regular file
+        assert_eq!((stat.st_mode & S_IFMT), S_IFREG);
+        // confirm it is not a directory
+        assert_ne!((stat.st_mode & S_IFMT), S_IFDIR);
+
+        let mut ruid = 12;
+        let mut euid = 12;
+        let mut suid = 12;
+        // get real, effective, and saved user IDs
+        lkl_sys_getresuid(&mut ruid, &mut euid, &mut suid);
+        assert_ne!(suid, 12);
+        assert_eq!(stat.st_uid, ruid);
+
+        let mut rgid = 12;
+        let mut egid = 12;
+        let mut sgid = 12;
+        lkl_sys_getresgid(&mut rgid, &mut egid, &mut sgid);
+        assert_ne!(sgid, 12);
+        assert_eq!(stat.st_gid, rgid);
+
+        assert_eq!(egid, 0);
+        assert_eq!(euid, 0);
     }
 }

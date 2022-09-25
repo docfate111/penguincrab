@@ -1,5 +1,7 @@
 /target
 src/*.swp
+*.swp
+*swp
 *.o
 *.so
 *.a

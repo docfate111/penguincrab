@@ -96,7 +96,7 @@ for some reason there is no __lkl__NR_stat constant
 }*/
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 pub struct lkl_stat {
     pub st_dev: c_ulong,
     pub st_ino: c_ulong,
@@ -387,4 +387,20 @@ lkl_sys! {
 lkl_sys! {
      __lkl__NR_fallocate =>
 pub fn lkl_sys_fallocate(fd: i64, mode: i64, offset: i64, len: i64);
+}
+
+lkl_sys! {
+     __lkl__NR_getresuid =>
+    pub fn lkl_sys_getresuid(
+        ruid: &mut u32 => |s: &mut u32| s as *mut c_uint,
+        euid: &mut u32 => |s: &mut u32| s as *mut c_uint,
+        suid: &mut u32 => |s: &mut u32| s as *mut c_uint);
+}
+
+lkl_sys! {
+     __lkl__NR_getresgid =>
+    pub fn lkl_sys_getresgid(
+        ruid: &mut u32 => |s: &mut u32| s as *mut c_uint,
+        euid: &mut u32 => |s: &mut u32| s as *mut c_uint,
+        suid: &mut u32 => |s: &mut u32| s as *mut c_uint);
 }

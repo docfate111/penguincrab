@@ -1,20 +1,31 @@
 pub mod lkl;
 pub use lkl::syscall_wrappers::*;
+use nix::unistd::close;
+use std::fs::File;
+use std::os::unix::io::{IntoRawFd, RawFd};
 
 /// construct this with LklSetup::new()
 pub struct LklSetup {
-    disk: lkl_disk,
+    pub disk: lkl_disk,
     partition: u32,
     disk_id: u32,
     pub mount_point: String,
+    file: RawFd,
 }
 
 impl LklSetup {
     /// new parses the settings and initializes the kernel
     pub fn new(arg: LklSetupArgs) -> Result<LklSetup, &'static str> {
+        let file = match File::options().read(true).write(true).open(arg.filename) {
+            Err(e) => {
+                panic!("Error opening {:}", e);
+            }
+            Ok(k) => k.into_raw_fd(),
+        };
+
         let mut disk = lkl_disk {
             dev: 0,
-            fd: arg.filesystem_fd,
+            fd: file as i32,
             ops: 0,
         };
         let boot_arg = match arg.boot_settings {
@@ -126,6 +137,7 @@ impl LklSetup {
             partition: partition,
             disk_id: disk_id,
             mount_point: mount_point.to_owned(),
+            file: file,
         })
     }
 }
@@ -133,12 +145,9 @@ impl LklSetup {
 /// Unmounts the disk for LKL then removes it and stops the kernel
 impl Drop for LklSetup {
     fn drop(&mut self) {
+        close(self.file).unwrap();
         unsafe {
-            let r = lkl_umount_dev(self.disk_id, self.partition, 0, 1000) as i32;
-            if r < 0 {
-                //eprintln!("lkl_umount_dev: ");
-                //print_error(&r);
-            }
+            lkl_umount_dev(self.disk_id, self.partition, 0, 1000) as i32;
             lkl_disk_remove(self.disk);
             lkl_sys_halt();
         }
@@ -151,7 +160,7 @@ impl Drop for LklSetup {
 /// (i.e. mem=128M loglevel=8
 /// on_panic is the function that runs when there is a panic and print replaces printk
 pub struct LklSetupArgs {
-    pub filesystem_fd: i32,
+    pub filename: String,
     pub boot_settings: Option<String>,
     pub partition_num: Option<u32>,
     pub filesystem_type: Option<String>,
@@ -160,42 +169,34 @@ pub struct LklSetupArgs {
     pub print: Option<fn()>,
 }
 
+fn setup_test() -> LklSetup {
+    // pass in the file descriptor so the library can read and write
+    // the changes to disk:
+    LklSetup::new(LklSetupArgs {
+        filename: String::from("ext4-00.image"),
+        boot_settings: None,
+        partition_num: None,
+        filesystem_type: None,
+        filesystem_options: None,
+        on_panic: None,
+        print: None,
+    })
+    .unwrap()
+}
+
 #[cfg(test)]
 mod tests {
     use crate::*;
     use more_asserts as ma;
-    use std::fs::File;
-    use std::os::unix::io::AsRawFd;
     #[test]
-    fn read_write_close() {
-        // first we open the disk image the kernel will use as its filesystem:
-        let filename = "./ext4-00.image";
-        let file = match File::options().read(true).write(true).open(filename) {
-            Err(e) => {
-                panic!("Error opening {:}", e);
-            }
-            Ok(k) => k,
-        };
-        // pass in the file descriptor so the library can read and write
-	// the changes to disk:
-        let server = LklSetup::new(LklSetupArgs {
-            filesystem_fd: file.as_raw_fd(),
-            boot_settings: None,
-            partition_num: None,
-            filesystem_type: None,
-            filesystem_options: None,
-            on_panic: None,
-            print: None,
-        })
-        .unwrap();
-
+    fn readwritetest() {
+        let server = setup_test();
         const BUF_LEN: usize = 26;
         const MSG: &str = "that's what i call riddim\0";
-        // remove null byte at the end
         let mut mpoint = server.mount_point.clone();
         mpoint.push_str("/test591\0");
-	let filename = to_cstr(&mpoint).unwrap();
-	// open a file in the mounted filesystem - make sure to use null bytes to terminate CStrings
+        let filename = to_cstr(&mpoint).unwrap();
+        // open a file in the mounted filesystem - make sure to use null bytes to terminate CStrings
         let mut r = lkl_sys_open(&filename, LKL_O_RDWR | LKL_O_CREAT, 0);
         ma::assert_ge!(r, 0);
         if r < 0 {
@@ -213,7 +214,7 @@ mod tests {
         let mut read_buf = [0 as u8; BUF_LEN];
         let readfd = lkl_sys_open(&filename, LKL_O_RDONLY, 0) as i32;
         ma::assert_ge!(r, 0);
-	// reading back our message from the file we wrote to:
+        // reading back our message from the file we wrote to:
         r = lkl_sys_read(readfd, &mut read_buf, BUF_LEN);
         assert_eq!(r as usize, BUF_LEN);
         assert_eq!(MSG, String::from_utf8(read_buf.to_vec()).unwrap());

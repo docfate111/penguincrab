@@ -21,4 +21,5 @@ lkl/
 	rests.rs - all the other constants
 
 Examples of how to use it
-[first test](https://github.com/docfate111/penguincrab/blob/main/src/lib.rs#L170)
+
+[tests](https://github.com/docfate111/penguincrab/blob/main/src/lib.rs#L192)

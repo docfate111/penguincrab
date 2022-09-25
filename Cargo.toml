@@ -14,3 +14,4 @@ homepage = "https://github.com/docfate111/penguincrab"
 
 [dependencies]
 more-asserts = "0.3.0"
+nix = "0.25.0"

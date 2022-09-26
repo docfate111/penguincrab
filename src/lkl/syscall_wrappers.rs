@@ -91,13 +91,13 @@ lkl_sys! { __lkl__NR_close =>
     pub fn lkl_sys_close(fd: i32);
 }
 
-/*pub fn lkl_sys_stat(fd: i32, stat: &mut lkl_stat) -> {
+/*pub fn lkl_sys_stat(fd: i32, stat: &mut stat) -> {
 for some reason there is no __lkl__NR_stat constant
 }*/
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Default)]
-pub struct lkl_stat {
+pub struct stat {
     pub st_dev: c_ulong,
     pub st_ino: c_ulong,
     pub st_mode: c_ulong,
@@ -121,7 +121,7 @@ pub struct lkl_stat {
 }
 
 lkl_sys! { __lkl__NR_fstat =>
-pub fn lkl_sys_fstat(fd: i32, stat: &mut lkl_stat => |s| (s as *mut _)); }
+pub fn lkl_sys_fstat(fd: i32, stat: &mut stat => |s| (s as *mut _)); }
 
 // no NR_lstat syscall number either
 
@@ -148,18 +148,32 @@ __lkl__NR_munmap =>
 
 #[repr(C)]
 #[derive(Debug)]
-pub struct lkl_linux_dirent64 {
+pub struct DirentName {
+    pub name: [c_ulong; 40]
+}
+
+impl Default for DirentName {
+     fn default() -> DirentName {
+	DirentName {
+		name: [0 as c_ulong; 40],
+	}
+      }
+}
+
+#[repr(C)]
+#[derive(Debug, Default)]
+pub struct dirent64 {
     pub d_ino: c_ulong,
     pub d_off: c_ulong,
     pub d_reclen: c_ushort,
     pub d_type: c_uchar,
-    pub d_name: [c_ulong; 100],
+    pub d_name: DirentName,
 }
 
 lkl_sys! {  __lkl__NR_getdents64 =>
 pub fn lkl_sys_getdents64(
 fd: i32,
-dirent: &mut lkl_linux_dirent64 => |s| (s as *mut _),
+dirent: &mut dirent64 => |s| (s as *mut _),
 count: usize); }
 
 lkl_sys! {  __lkl__NR_pread64 =>
@@ -220,8 +234,8 @@ lkl_sys! {
 filename: &CStr => |s: &CStr| s.as_ptr(),
 length: c_long); }
 /*
-redefine lkl_statfs without type aliases
-pub fn lkl_sys_statfs(pathname: &str, buf: &mut lkl_statfs) -> c_long {
+redefine statfs without type aliases
+pub fn lkl_sys_statfs(pathname: &str, buf: &mut statfs) -> c_long {
     let mut params = [0 as c_long; 6];
     let mut file = String::from(pathname);
     if pathname.chars().last().unwrap() != '\0' {
@@ -241,7 +255,7 @@ pub fn lkl_sys_statfs(pathname: &str, buf: &mut lkl_statfs) -> c_long {
 
 }
 
-pub fn lkl_sys_fstatfs(fd: i32, buf: &mut lkl_statfs) -> c_long {
+pub fn lkl_sys_fstatfs(fd: i32, buf: &mut statfs) -> c_long {
     let mut params = [0 as c_long; 6];
     params[0] = fd as c_long;
     params[1] = (buf as *mut _) as c_long;

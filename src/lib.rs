@@ -228,6 +228,7 @@ mod tests {
         assert_eq!((stat.st_mode & S_IFMT), S_IFREG);
         // confirm it is not a directory
         assert_ne!((stat.st_mode & S_IFMT), S_IFDIR);
+        ma::assert_ge!(r, 0);
 
         let mut ruid = 12;
         let mut euid = 12;
@@ -243,8 +244,24 @@ mod tests {
         lkl_sys_getresgid(&mut rgid, &mut egid, &mut sgid);
         assert_ne!(sgid, 12);
         assert_eq!(stat.st_gid, rgid);
-
         assert_eq!(egid, 0);
         assert_eq!(euid, 0);
+
+        const SEEK_SET: u32 = 0;
+        let offset: u32 = 3;
+        // seek should return offset if successful
+        let r = lkl_sys_lseek(readfd, offset, SEEK_SET) as u32;
+        assert_eq!(r, offset);
+
+        /*const PAGE_SIZE: usize = 0x1000;
+        const PROT_READ: i32 = 1;
+        const MAP_SHARED: i32 = 4;
+        let mut page = [0; PAGE_SIZE];
+        // this works in C fine but no setup of mmap works for some reason
+        // idk whether to use &mut [u8] or u64 for the address
+        let ptr = lkl_sys_mmap(
+                0x5b0000, 0x1000, 0x1|0x2, 0x10|0x20|0x02,-1, 0);
+        print_error(&(ptr as i32));
+        ma::assert_ge!(ptr, 0);*/
     }
 }

@@ -131,12 +131,19 @@ lkl_sys! {
 
 lkl_sys! {
  __lkl__NR_mmap => pub fn lkl_sys_mmap(
-    addr: u64,
+    addr: u64, // &mut [u8] => |s: &mut [u8]| s.as_mut_ptr(),
     length: usize,
     prot: i32,
     flags: i32,
     fd: i32,
     offset: u32);
+}
+
+lkl_sys! {
+__lkl__NR_munmap =>
+    pub fn lkl_sys_munmap(
+    addr: &mut [u8] => |s: &mut [u8]| s.as_mut_ptr(),
+    length: usize);
 }
 
 #[repr(C)]

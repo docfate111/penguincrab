@@ -5,7 +5,7 @@ unsafe wrapper for [Linux Kernel Library ](https://github.com/lkl/linux.git) in 
 
 This command will take a while to compile since it also builds the kernel:
 ``` 
-$ cargo build && cargo test
+$ cargo build && cargo test -- --nocapture
 ```
 
 File naming

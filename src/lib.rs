@@ -188,6 +188,8 @@ fn setup_test() -> LklSetup {
 mod tests {
     use crate::*;
     use more_asserts as ma;
+    use std::mem;
+
     #[test]
     fn separate_later() {
         let server = setup_test();
@@ -199,7 +201,7 @@ mod tests {
         let filename = to_cstr(&mpoint).unwrap();
 
         // open a file in the mounted filesystem - make sure to use null bytes to terminate CStrings
-        let mut r = lkl_sys_open(&filename, LKL_O_RDWR | LKL_O_CREAT, 0);
+        let mut r = lkl_sys_open(&filename, LKL_O_RDWR | LKL_O_CREAT, 0o755);
         ma::assert_ge!(r, 0);
 
         let fd = r as i32;
@@ -217,7 +219,7 @@ mod tests {
         assert_eq!(r as usize, BUF_LEN);
         assert_eq!(MSG, String::from_utf8(read_buf.to_vec()).unwrap());
 
-        let mut stat = lkl_stat {
+        let mut stat = stat {
             ..Default::default()
         };
         let r = lkl_sys_fstat(readfd, &mut stat);
@@ -263,5 +265,25 @@ mod tests {
                 0x5b0000, 0x1000, 0x1|0x2, 0x10|0x20|0x02,-1, 0);
         print_error(&(ptr as i32));
         ma::assert_ge!(ptr, 0);*/
-    }
+    
+	let mut dirp = dirent64{ ..Default::default() };
+	let r = lkl_sys_getdents64(readfd, &mut dirp, mem::size_of::<dirent64>());
+	// not a directory
+	assert_eq!(r, -20);
+	
+	let mut dirpath = server.mount_point.clone();
+	dirpath.push_str("/smh\0");
+	let dirpath = to_cstr(&dirpath).expect("invalid string for directory name");
+	let r = lkl_sys_mkdir(dirpath,
+		0o755);
+	assert_eq!(r, 0);
+	let dirfd = lkl_sys_open(dirpath, LKL_O_DIRECTORY | LKL_O_RDONLY, 0) as i32;
+	assert_eq!(dirfd, 1);
+	let r = lkl_sys_getdents64(dirfd, &mut dirp, mem::size_of::<dirent64>());	
+	ma::assert_ge!(r, 0);
+	let r = lkl_sys_close(readfd);	
+	assert_eq!(r, 0);
+	let r = lkl_sys_close(dirfd);
+	assert_eq!(r, 0);
+	}
 }

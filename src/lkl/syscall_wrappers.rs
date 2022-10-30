@@ -316,8 +316,8 @@ lkl_sys! { __lkl__NR_linkat =>
             flags: u32);
 }
 
-pub fn lkl_sys_unlink(existing: &CStr, new: &CStr) -> c_long {
-    return lkl_sys_linkat(LKL_AT_FDCWD, existing, LKL_AT_FDCWD, new, 0);
+pub fn lkl_sys_unlink(existing: &CStr) -> c_long {
+    return lkl_sys_unlinkat(LKL_AT_REMOVEDIR as i32, existing, 0);
 }
 
 pub fn lkl_sys_symlink(existing: &CStr, new: &CStr) -> c_long {

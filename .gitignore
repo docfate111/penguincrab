@@ -7,3 +7,5 @@ src/*.swp
 *.a
 .gitignore
 liblkl.so
+linux/
+linux

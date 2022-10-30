@@ -6,3 +6,4 @@ src/*.swp
 *.so
 *.a
 .gitignore
+liblkl.so

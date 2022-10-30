@@ -1,7 +1,7 @@
 [package]
 name = "penguincrab"
 authors = ["docfate111"]
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 links = "shared"
 build = "build.rs"

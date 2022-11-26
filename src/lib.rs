@@ -255,7 +255,8 @@ mod tests {
         let r = lkl_sys_lseek(readfd, s_offset, SEEK_SET) as u32;
         assert_eq!(r, s_offset);
 	
-	/*const PAGE_SIZE: usize = 0x1000;
+	/*mmap always fails??
+     const PAGE_SIZE: usize = 0x1000;
         const PROT_READ: i32 = 1;
         const MAP_SHARED: i32 = 4;
         let mut page = [0; PAGE_SIZE];
@@ -277,7 +278,7 @@ mod tests {
 	dirpath.push_str("/smh\0");
 	let dirpath = to_cstr(&dirpath).expect("invalid string for directory name");
 	let fd = lkl_sys_open(&dirpath, LKL_O_DIRECTORY | LKL_O_RDONLY, 0) as i32;
-	let r = lkl_sys_mkdir(&dirpath,
+    let r = lkl_sys_mkdir(&dirpath,
 		0o755);
 	assert_eq!(r, 0);
 	let dirfd = lkl_sys_open(dirpath, LKL_O_DIRECTORY | LKL_O_RDONLY, 0) as i32;
@@ -293,17 +294,17 @@ mod tests {
 	let writefd = lkl_sys_open(&dirpath, LKL_O_WRONLY | LKL_O_CREAT, 0o755) as i32; 	
 	let r = lkl_sys_pwrite64(writefd, buf, BUF_LEN, 0);
 	assert_eq!(r as usize, BUF_LEN);
-	let r = lkl_sys_close(writefd);
+	lkl_sys_close(writefd);
 	
 	// pread64 test
-	const offset: usize = 5;
-	let mut read_buf = [0 as u8; BUF_LEN - offset];
+	const OFFSET: usize = 5;
+	let mut read_buf = [0 as u8; BUF_LEN - OFFSET];
 	let readfd = lkl_sys_open(&dirpath, LKL_O_RDONLY, 0) as i32;
-	let r = lkl_sys_pread64(readfd, &mut read_buf, BUF_LEN - offset, offset as u64);
-	assert_eq!(r as usize, BUF_LEN - offset);
+	let r = lkl_sys_pread64(readfd, &mut read_buf, BUF_LEN - OFFSET, OFFSET as u64);
+	assert_eq!(r as usize, BUF_LEN - OFFSET);
 	//println!();
 	let read_str = String::from_utf8(read_buf.to_vec()).unwrap();	
-	assert_eq!(String::from(&MSG[offset..]), read_str); 
+	assert_eq!(String::from(&MSG[OFFSET..]), read_str); 
 
 	mtpoint.push_str("/smh/blue\0");
 	let new_name = to_cstr(&mtpoint).unwrap();	

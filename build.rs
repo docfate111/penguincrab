@@ -4,9 +4,9 @@ use std::process::Command;
 
 fn main() {
     let project_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    if !Path::new("./liblkl.so").exists() {
+    if !Path::new("liblkl.so").exists() {
         Command::new("git")
-            .args(&["clone", "-b", "merge-5.18", "https://github.com/thehajime/linux.git"])
+            .args(&["clone", "https://github.com/lkl/linux.git"])
             .current_dir(&Path::new(&project_dir))
             .status()
             .unwrap();

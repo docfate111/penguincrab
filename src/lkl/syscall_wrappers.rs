@@ -149,15 +149,15 @@ __lkl__NR_munmap =>
 #[repr(C)]
 #[derive(Debug)]
 pub struct DirentName {
-    pub name: [c_ulong; 40]
+    pub name: [c_ulong; 40],
 }
 
 impl Default for DirentName {
-     fn default() -> DirentName {
-	DirentName {
-		name: [0 as c_ulong; 40],
-	}
-      }
+    fn default() -> DirentName {
+        DirentName {
+            name: [0 as c_ulong; 40],
+        }
+    }
 }
 
 #[repr(C)]

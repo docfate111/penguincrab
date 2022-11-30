@@ -68,10 +68,7 @@ impl LklSetup {
             return Err("Couldn't add disk");
         }
         let partition = arg.partition_num.unwrap_or(0);
-        let fs_type = &arg
-            .filesystem_type
-            .unwrap_or("ext4\0".to_string())
-            .to_owned()[..];
+        let fs_type = &arg.filesystem_type.unwrap_or("ext4".to_string()).to_owned()[..];
         let default_options = match fs_type {
             "ext4" => "errors=remount-ro\0",
             "btrfs" => "thread_pool=1\0",
@@ -79,6 +76,8 @@ impl LklSetup {
             "reiserfs" => "acl,user_xattr\0",
             &_ => "\0",
         };
+        let mut fs_type_with_nul = String::from(fs_type);
+        fs_type_with_nul.push_str("\0");
         let mount_options = arg
             .filesystem_options
             .unwrap_or(default_options.to_string());
@@ -89,7 +88,7 @@ impl LklSetup {
             ret = lkl_mount_dev(
                 disk_id,
                 partition,
-                to_cstr(&fs_type)
+                to_cstr(&fs_type_with_nul)
                     .expect("filesystem has incorrect nulls")
                     .as_ptr()
                     .cast(),
@@ -176,7 +175,7 @@ fn setup_test() -> LklSetup {
         filename: String::from("ext4-00.image"),
         boot_settings: None,
         partition_num: None,
-        filesystem_type: None,
+        filesystem_type: Some("ext4".to_string()),
         filesystem_options: None,
         on_panic: None,
         print: None,
@@ -254,90 +253,92 @@ mod tests {
         // seek should return offset if successful
         let r = lkl_sys_lseek(readfd, s_offset, SEEK_SET) as u32;
         assert_eq!(r, s_offset);
-	
-	/*mmap always fails??
-     const PAGE_SIZE: usize = 0x1000;
-        const PROT_READ: i32 = 1;
-        const MAP_SHARED: i32 = 4;
-        let mut page = [0; PAGE_SIZE];
-        // this works in C fine but no setup of mmap works for some reason
-        // idk whether to use &mut [u8] or u64 for the address
-        let ptr = lkl_sys_mmap(
-                0x5b0000, 0x1000, 0x1|0x2, 0x10|0x20|0x02,-1, 0);
-        print_error(&(ptr as i32));
-        ma::assert_ge!(ptr, 0);*/
-    
-	let mut dirp = dirent64{ ..Default::default() };
-	let r = lkl_sys_getdents64(readfd, &mut dirp, mem::size_of::<dirent64>());
-	// not a directory
-	assert_eq!(r, -20);
-	let r = lkl_sys_close(readfd);
-	assert_eq!(r, 0);
-        
-	let mut dirpath = server.mount_point.clone();
-	dirpath.push_str("/smh\0");
-	let dirpath = to_cstr(&dirpath).expect("invalid string for directory name");
-	let fd = lkl_sys_open(&dirpath, LKL_O_DIRECTORY | LKL_O_RDONLY, 0) as i32;
-    let r = lkl_sys_mkdir(&dirpath,
-		0o755);
-	assert_eq!(r, 0);
-	let dirfd = lkl_sys_open(dirpath, LKL_O_DIRECTORY | LKL_O_RDONLY, 0) as i32;
-	ma::assert_ge!(dirfd, 0);
-	let r = lkl_sys_getdents64(dirfd, &mut dirp, mem::size_of::<dirent64>());	
-	ma::assert_ge!(r, 0);
 
-	// pwrite64 test
-	let mut dirpath = server.mount_point.clone();
-	let mut mtpoint = dirpath.clone();
-	dirpath.push_str("/smh/lmao\0");
-	let dirpath = to_cstr(&dirpath).unwrap();
-	let writefd = lkl_sys_open(&dirpath, LKL_O_WRONLY | LKL_O_CREAT, 0o755) as i32; 	
-	let r = lkl_sys_pwrite64(writefd, buf, BUF_LEN, 0);
-	assert_eq!(r as usize, BUF_LEN);
-	lkl_sys_close(writefd);
-	
-	// pread64 test
-	const OFFSET: usize = 5;
-	let mut read_buf = [0 as u8; BUF_LEN - OFFSET];
-	let readfd = lkl_sys_open(&dirpath, LKL_O_RDONLY, 0) as i32;
-	let r = lkl_sys_pread64(readfd, &mut read_buf, BUF_LEN - OFFSET, OFFSET as u64);
-	assert_eq!(r as usize, BUF_LEN - OFFSET);
-	//println!();
-	let read_str = String::from_utf8(read_buf.to_vec()).unwrap();	
-	assert_eq!(String::from(&MSG[OFFSET..]), read_str); 
+        /*mmap always fails??
+        const PAGE_SIZE: usize = 0x1000;
+           const PROT_READ: i32 = 1;
+           const MAP_SHARED: i32 = 4;
+           let mut page = [0; PAGE_SIZE];
+           // this works in C fine but no setup of mmap works for some reason
+           // idk whether to use &mut [u8] or u64 for the address
+           let ptr = lkl_sys_mmap(
+                   0x5b0000, 0x1000, 0x1|0x2, 0x10|0x20|0x02,-1, 0);
+           print_error(&(ptr as i32));
+           ma::assert_ge!(ptr, 0);*/
 
-	mtpoint.push_str("/smh/blue\0");
-	let new_name = to_cstr(&mtpoint).unwrap();	
-	let r = lkl_sys_rename(&dirpath, &new_name);
-	assert_eq!(r, 0);
-	let old_name_fd = lkl_sys_open(&dirpath, LKL_O_RDONLY, 0) as i32;
-	ma::assert_lt!(old_name_fd, 0);
-	let new_fd = lkl_sys_open(&new_name, LKL_O_RDONLY, 0) as i32;
-	ma::assert_ge!(new_fd, 0);
-	let r = lkl_sys_close(new_fd);
- 	assert_eq!(r, 0);
+        let mut dirp = dirent64 {
+            ..Default::default()
+        };
+        let r = lkl_sys_getdents64(readfd, &mut dirp, mem::size_of::<dirent64>());
+        // not a directory
+        assert_eq!(r, -20);
+        let r = lkl_sys_close(readfd);
+        assert_eq!(r, 0);
 
-	let mut mntpt = server.mount_point.clone();
-	mntpt.push_str("\0");
-	let mntfd = lkl_sys_open(to_cstr(&mntpt).unwrap(), LKL_O_RDONLY | LKL_O_DIRECTORY, 0) as i32;
-	let r = lkl_sys_unlinkat(mntfd, to_cstr("test591\0").unwrap(), 0);
-	//print_error(&(r as i32));
-	assert_eq!(r, 0);	
-	let r = lkl_sys_unlinkat(dirfd, to_cstr("blue\0").unwrap(), 0); 
-	assert_eq!(r, 0);
-	let r = lkl_sys_rmdir(to_cstr("smh\0").unwrap());
-	assert_eq!(r, 0);
+        let mut dirpath = server.mount_point.clone();
+        dirpath.push_str("/smh\0");
+        let dirpath = to_cstr(&dirpath).expect("invalid string for directory name");
+        let fd = lkl_sys_open(&dirpath, LKL_O_DIRECTORY | LKL_O_RDONLY, 0) as i32;
+        let r = lkl_sys_mkdir(&dirpath, 0o755);
+        assert_eq!(r, 0);
+        let dirfd = lkl_sys_open(dirpath, LKL_O_DIRECTORY | LKL_O_RDONLY, 0) as i32;
+        ma::assert_ge!(dirfd, 0);
+        let r = lkl_sys_getdents64(dirfd, &mut dirp, mem::size_of::<dirent64>());
+        ma::assert_ge!(r, 0);
 
-	let r = lkl_sys_fsync(readfd);
-	assert_eq!(r, 0);
-	let r = lkl_sys_fdatasync(dirfd);
-	assert_eq!(r, 0);
-	let r = lkl_sys_syncfs(readfd);
-	assert_eq!(r, 0);	
-	let r = lkl_sys_close(readfd);	
-	assert_eq!(r, 0);
+        // pwrite64 test
+        let mut dirpath = server.mount_point.clone();
+        let mut mtpoint = dirpath.clone();
+        dirpath.push_str("/smh/lmao\0");
+        let dirpath = to_cstr(&dirpath).unwrap();
+        let writefd = lkl_sys_open(&dirpath, LKL_O_WRONLY | LKL_O_CREAT, 0o755) as i32;
+        let r = lkl_sys_pwrite64(writefd, buf, BUF_LEN, 0);
+        assert_eq!(r as usize, BUF_LEN);
+        lkl_sys_close(writefd);
 
-	let r = lkl_sys_close(dirfd);  
-	assert_eq!(r, 0);
-	}
+        // pread64 test
+        const OFFSET: usize = 5;
+        let mut read_buf = [0 as u8; BUF_LEN - OFFSET];
+        let readfd = lkl_sys_open(&dirpath, LKL_O_RDONLY, 0) as i32;
+        let r = lkl_sys_pread64(readfd, &mut read_buf, BUF_LEN - OFFSET, OFFSET as u64);
+        assert_eq!(r as usize, BUF_LEN - OFFSET);
+        //println!();
+        let read_str = String::from_utf8(read_buf.to_vec()).unwrap();
+        assert_eq!(String::from(&MSG[OFFSET..]), read_str);
+
+        mtpoint.push_str("/smh/blue\0");
+        let new_name = to_cstr(&mtpoint).unwrap();
+        let r = lkl_sys_rename(&dirpath, &new_name);
+        assert_eq!(r, 0);
+        let old_name_fd = lkl_sys_open(&dirpath, LKL_O_RDONLY, 0) as i32;
+        ma::assert_lt!(old_name_fd, 0);
+        let new_fd = lkl_sys_open(&new_name, LKL_O_RDONLY, 0) as i32;
+        ma::assert_ge!(new_fd, 0);
+        let r = lkl_sys_close(new_fd);
+        assert_eq!(r, 0);
+
+        let mut mntpt = server.mount_point.clone();
+        mntpt.push_str("\0");
+        let mntfd =
+            lkl_sys_open(to_cstr(&mntpt).unwrap(), LKL_O_RDONLY | LKL_O_DIRECTORY, 0) as i32;
+        let r = lkl_sys_unlinkat(mntfd, to_cstr("test591\0").unwrap(), 0);
+        //print_error(&(r as i32));
+        assert_eq!(r, 0);
+        let r = lkl_sys_unlinkat(dirfd, to_cstr("blue\0").unwrap(), 0);
+        assert_eq!(r, 0);
+        let r = lkl_sys_rmdir(to_cstr("smh\0").unwrap());
+        assert_eq!(r, 0);
+
+        let r = lkl_sys_fsync(readfd);
+        assert_eq!(r, 0);
+        let r = lkl_sys_fdatasync(dirfd);
+        assert_eq!(r, 0);
+        let r = lkl_sys_syncfs(readfd);
+        assert_eq!(r, 0);
+        let r = lkl_sys_close(readfd);
+        assert_eq!(r, 0);
+
+        let r = lkl_sys_close(dirfd);
+        assert_eq!(r, 0);
+    }
 }

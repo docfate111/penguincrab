@@ -25,7 +25,11 @@ pub fn to_cstr<'a>(rust_str: &'a str) -> Option<&CStr> {
         );
         return None;
     }
-    if rust_str.chars().last().unwrap() != '\0' {
+    let last = rust_str.chars().last();
+    if last.is_none() {
+        return None;
+    }
+    if last.unwrap() != '\0' {
         eprintln!("String \"{}\" must be null terminated (this function can't append null due to ownership rules)", rust_str);
         return None;
     }
@@ -370,7 +374,7 @@ lkl_sys! { __lkl__NR_fchown => pub fn lkl_sys_fchown(fd: i32, user: u32, group: 
 lkl_sys! { __lkl__NR_setxattr => pub fn lkl_sys_setxattr(
     pathname: &CStr => |s: &CStr| s.as_ptr(),
     strname: &CStr => |s: &CStr| s.as_ptr(),
-    value: &[u8] => |s: &[u8]| s.as_ptr(),
+    value: &CStr => |s: &CStr| s.as_ptr(),
     size: usize,
     flags: u32);
 }

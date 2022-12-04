@@ -23,3 +23,5 @@ lkl/
 Examples of how to use it
 
 [tests](https://github.com/docfate111/penguincrab/blob/main/src/lib.rs#L192)
+
+To use penguincrab as a crate either copy the build.rs into the crate that uses it or compile liblkl.so and run your crate with LD_LIBARAY_PATH=(directory with liblkl.so)

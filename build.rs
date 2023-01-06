@@ -6,7 +6,7 @@ fn main() {
     let project_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     if !Path::new("./linux").exists() {
         Command::new("git")
-            .args(&["clone", "https://github.com/lkl/linux.git"])
+            .args(&["clone", "https://github.com/docfate111/linux-lkl.git"])
             .current_dir(&Path::new(&project_dir))
             .status()
             .unwrap();

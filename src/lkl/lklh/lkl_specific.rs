@@ -127,6 +127,7 @@ pub use std::os::raw::{c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort
 };***/
 
 #[repr(C)]
+#[derive(Default)]
 #[derive(Debug, Copy, Clone)]
 pub struct lkl_host_operations {
     pub virtio_devices: c_ulong,
@@ -170,6 +171,7 @@ pub struct lkl_dir {
 }
 
 extern "C" {
+    pub fn lkl_init(lkl_ops: &lkl_host_operations) -> c_int;
     pub static mut lkl_host_ops: lkl_host_operations;
     /**
     * lkl_start_kernel - registers the host operations and starts the kernel

@@ -47,6 +47,7 @@ impl LklSetup {
             if arg.print.is_some() {
                 lkl_host_ops.print = (arg.print.unwrap() as *const fn()) as c_ulong;
             }
+	    lkl_init(&lkl_host_ops);
             disk_id = lkl_disk_add(&mut disk) as u32;
             lkl_start_kernel(&lkl_host_ops, boot_arg);
         }
@@ -278,7 +279,7 @@ mod tests {
         let mut dirpath = server.mount_point.clone();
         dirpath.push_str("/smh\0");
         let dirpath = to_cstr(&dirpath).expect("invalid string for directory name");
-        let fd = lkl_sys_open(&dirpath, LKL_O_DIRECTORY | LKL_O_RDONLY, 0) as i32;
+        let _fd = lkl_sys_open(&dirpath, LKL_O_DIRECTORY | LKL_O_RDONLY, 0) as i32;
         let r = lkl_sys_mkdir(&dirpath, 0o755);
         assert_eq!(r, 0);
         let dirfd = lkl_sys_open(dirpath, LKL_O_DIRECTORY | LKL_O_RDONLY, 0) as i32;

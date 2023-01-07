@@ -16,6 +16,18 @@ fn main() {
             .status()
             .unwrap();
     }
+    if !Path::new("./ext4-00.img").exists() {
+         Command::new("dd")
+            .args(&["if=/dev/zero", "ext4-00.img", "bs=4k", "count=2048"])
+            .current_dir(&Path::new(&project_dir))
+            .status()
+            .unwrap();
+        Command::new("mkfs.ext4 ")
+            .args(&["ext4-00.img"])
+            .current_dir(&Path::new(&project_dir))
+            .status()
+            .unwrap();
+    }
     println!("cargo:rustc-link-search=native=linux/tools/lkl");
     //println!("cargo:rustc-link-search={}", project_dir); // the "-L" flag
     println!("cargo:rustc-link-lib=lkl"); // the "-l" flag

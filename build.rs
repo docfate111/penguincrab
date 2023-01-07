@@ -11,7 +11,7 @@ fn main() {
             .status()
             .unwrap();
         Command::new("make")
-            .args(&["ARCH=lkl", "-C", "linux/tools/lkl"])
+            .args(&["ARCH=lkl", "-C", "linux/tools/lkl", "-j16"])
             .current_dir(&Path::new(&project_dir))
             .status()
             .unwrap();

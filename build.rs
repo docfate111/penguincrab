@@ -18,7 +18,7 @@ fn main() {
     }
     if !Path::new("./ext4-00.img").exists() {
          Command::new("dd")
-            .args(&["if=/dev/zero", "ext4-00.img", "bs=4k", "count=2048"])
+            .args(&["if=/dev/zero", "of=ext4-00.img", "bs=4k", "count=2048"])
             .current_dir(&Path::new(&project_dir))
             .status()
             .unwrap();

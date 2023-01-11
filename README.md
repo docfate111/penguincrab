@@ -7,6 +7,10 @@ This command will take a while to compile since it also builds the kernel:
 ``` 
 $ cargo build && cargo test -- --nocapture
 ```
+if you have docker
+```
+$ sudo docker build --progress=plain . -f Dockerfile
+```
 
 File naming
 

@@ -22,7 +22,7 @@ fn main() {
             .current_dir(&Path::new(&project_dir))
             .status()
             .unwrap();
-        Command::new("mkfs.ext4 ")
+        Command::new("mkfs.ext4")
             .args(&["ext4-00.img"])
             .current_dir(&Path::new(&project_dir))
             .status()

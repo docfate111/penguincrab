@@ -173,7 +173,7 @@ fn setup_test() -> LklSetup {
     // pass in the file descriptor so the library can read and write
     // the changes to disk:
     LklSetup::new(LklSetupArgs {
-        filename: String::from("ext4-00.image"),
+        filename: String::from("ext4-00.img"),
         boot_settings: None,
         partition_num: None,
         filesystem_type: Some("ext4".to_string()),
